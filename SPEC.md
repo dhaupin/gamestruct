@@ -1,4 +1,4 @@
-# gamestruct — Specification v0.1.0
+# gamestruct — Specification v1
 
 > The game-agent lane bridge. One semantic tree; two lanes: a **human lane**
 > (assistive technology) and an **agent lane** (machine clients). Four
@@ -7,6 +7,12 @@
 Status: **draft, implementation-backed.** The normative rules below are
 executable — `lib/` implements them and `tests/` proves them. Where prose and
 code disagree, the code is the bug.
+
+**Revision history.** The spec revision is its own axis, decoupled from the
+package semver (the family rule: a spec revision freezes the contract, a
+package version moves with the code). v1 freezes rules N1-N21 against the
+implementation `lib/` ships. Additive rows arrive as v1.x; a rule that changes
+a conforming host's behavior is v2.
 
 ---
 

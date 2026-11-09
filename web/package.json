@@ -1,7 +1,6 @@
 {
   "name": "gamestruct-site",
   "private": true,
-  "version": "0.9.0",
   "type": "module",
   "description": "gamestruct site - the landing the struct family ships from (prestruct prerender + static hosting)",
   "scripts": {

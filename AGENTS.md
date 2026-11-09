@@ -33,10 +33,14 @@ tests/bridgeworks.test.mjs  the suite
 web/                      the landing (prestruct + Vite + React; gamestruct.creadev.org)
 docs/                     the Jekyll docs (rendered at docs.creadev.org/gamestruct)
 scripts/sync-site.mjs     generates docs/_config.yml + web public files from site.config.js
+scripts/release-notes.cjs   the GH release body extractor (from CHANGELOG.md)
+scripts/verify-release.cjs  the post-publish trust ladder (npm + GH release)
+scripts/ship-from-download.cjs  the phone publish lane (family-reusable)
 labs/battery.json         the committed self-check contract (gamestruct-battery@1)
 labs/TASKS.md             session log (operational history)
 web/scripts/build-status.mjs  the family-status@1 emitter (writes web/public/status.json)
-SPEC.md                   the normative contract (N1..N21)
+SPEC.md                   the normative contract (spec revision v1, rules N1..N21)
+DEPLOY.md                 the release runbook (manual 0.9.x lane, the OIDC flip)
 site.config.js            the site identity (see below)
 ```
 
@@ -55,12 +59,21 @@ site.config.js            the site identity (see below)
 6. **The two lanes never diverge.** If a handle is actionable in one lane it
    MUST be actionable in the other. That property is the whole product; guard
    it.
+7. **`package.json` is THE single version truth.** The bin answers `--version`
+   by reading it, `lib/version.mjs` derives `VERSION` from it, the MCP handler
+   defaults to it, and `web/` carries NO version field. A release is "move
+   package.json + the CHANGELOG"; `tests/version-truth.mjs` refuses any surface
+   that drifts. The spec revision (`SPEC.md` v1) is its own axis.
+8. **The release ladder is the family shape.** `0.9.x` is the manual npm lane;
+   `publish.yml` REFUSES 0.x and gates the OIDC flip. A tag drives
+   publish -> release -> verify; the offline pack ladder
+   (`tests/release-verify.test.cjs`) runs every push. See `DEPLOY.md`.
 
 ## Commands before any push
 
 ```bash
-npm test          # the suite (must be green)
-npm run check     # node --check every module + the self-checks
+npm test          # version-truth + the suite + the ladder legs (must be green)
+npm run check     # node --check every module + sync + the self-checks
 npm run doctor    # eyeball both lanes on a demo surface
 ```
 
