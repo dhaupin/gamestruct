@@ -36,6 +36,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **A remote catalog reads a WORLD door's own snapshot.** `DoorClient.catalog()`
+  over the wire read `observe().nodes`, but a game door serves its own flat
+  `actions[]` (a live world, not a serialized tree), so the catalog failed
+  against the real Synmergia door -- the cross-repo drift the family carried
+  forward. The synmergia adapter now exports `doorNodes(snapshot)`, the ONE
+  normalizer that folds the door's wire shape into the SPEC node shape (reusing
+  the same role mapping + verb affordance the local bridge build uses, so the
+  two never drift), and `DoorClient` takes an optional `mapNodes` normalizer
+  (`new DoorClient({ url, mapNodes: doorNodes })`). Omit it and a door that
+  serves no `nodes` refuses honestly, as before. Verified live: the remote
+  catalog reads the door's own `ui:` handles (including `set_value` on a text
+  field) and advertises the `see` tool.
+
 - **The Synmergia adapter wires `set_value`.** A settable control (text box,
   slider, combo, checkbox, switch) now advertises `set_value` and its handler
   forwards `{ id, verb: 'set_value', value }` to the door; everything else

@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 
 import { Bridge, ROLES, ACTIONS, Tree, mintHandle, EventRing } from '../lib/index.mjs';
 import { human, agent, bindings } from '../lib/index.mjs';
-import { buildBridge as buildSynmergia, pushLog } from '../lib/adapters/synmergia.mjs';
+import { buildBridge as buildSynmergia, pushLog, doorNodes } from '../lib/adapters/synmergia.mjs';
 import { DoorClient, pursueOne } from '../lib/adapters/vant.mjs';
 import { buildBridge as buildForm, readValues as readFormValues, validate as validateForm } from '../lib/adapters/webform.mjs';
 import { fromElement, roleFor, nameFor } from '../lib/adapters/dom.mjs';
@@ -472,6 +472,56 @@ test('vant adapter: DoorClient.catalog over a remote door uses observe (not a de
         assert.equal(cat.ok, true);
         assert.ok(cat.tools.some((t) => t._handle === 'ui:start'), 'catalog read the live tree');
         assert.ok(cat.tools.some((t) => t.name === 'see'), 'a remote door advertises its eyes');
+    } finally {
+        await new Promise((r) => server.close(r));
+    }
+});
+
+test('synmergia adapter: doorNodes folds the door wire shape into SPEC nodes', () => {
+    // The door serves a flat `actions[]` (a game snapshot), NOT a serialized
+    // tree. doorNodes is the ONE normalizer: it reuses the same role mapping +
+    // verb affordance the local bridge build uses, so a remote catalog and the
+    // live tree can never drift.
+    const nodes = doorNodes(doorSnapshot());
+    assert.equal(nodes.length, 3);
+    const wolf = nodes.find((n) => n.id === 'world:wolf_1');
+    assert.equal(wolf.role, ROLES.LISTITEM);
+    assert.deepEqual(wolf.actions, [ACTIONS.ACTIVATE]);
+    assert.equal(wolf.name, 'Attack Wolf');
+    const field = nodes.find((n) => n.id.endsWith('UsernameField'));
+    assert.equal(field.role, ROLES.TEXTBOX);
+    assert.deepEqual(field.actions, [ACTIONS.SET_VALUE]);
+    // no actions -> an empty list, never a throw
+    assert.deepEqual(doorNodes({}), []);
+    assert.deepEqual(doorNodes(null), []);
+});
+
+test('vant adapter: DoorClient.catalog over a REAL world door (actions wire) with mapNodes', async () => {
+    // The exact drift the family carried: a world door's observe() serves its
+    // own snapshot, so a remote catalog must fold it via mapNodes. Build the
+    // door from the synmergia adapter (the real wire shape) and prove the
+    // remote catalog reads the live handles -- the door's own, unchanged.
+    const http = await import('node:http');
+    // The door serves its OWN snapshot on /observe -- a flat `actions[]`, not a
+    // serialized tree. This is the wire a real world door speaks.
+    const server = http.createServer((req, res) => {
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify(req.url.startsWith('/observe') ? doorSnapshot() : { ok: true }));
+    });
+    await new Promise((r) => server.listen(0, '127.0.0.1', r));
+    const port = server.address().port;
+    try {
+        const client = new DoorClient({ url: 'http://127.0.0.1:' + port, mapNodes: doorNodes });
+        const cat = await client.catalog();
+        assert.equal(cat.ok, true);
+        assert.ok(cat.tools.some((t) => t._handle === 'ui:MainMenu/MenuButtons/StartButton'), 'catalog read the live handle');
+        assert.ok(cat.tools.some((t) => t._handle === 'ui:Login/Center/Panel/Form/UsernameField' && t._actions.includes(ACTIONS.SET_VALUE)), 'a settable control survives the wire');
+        assert.ok(cat.tools.some((t) => t.name === 'see'), 'a door with eyes advertises the see tool');
+        // Without mapNodes a bare world door honestly reports it served no nodes.
+        const blind = new DoorClient({ url: 'http://127.0.0.1:' + port });
+        const noMap = await blind.catalog();
+        assert.equal(noMap.ok, false);
+        assert.match(noMap.reason, /no nodes/);
     } finally {
         await new Promise((r) => server.close(r));
     }

@@ -3,6 +3,43 @@
 Operational history. Stable conventions live in `AGENTS.md`; the normative
 contract lives in `SPEC.md`.
 
+## 2026-11-04 - the remote catalog reads a world door's own snapshot
+
+Session context: the cross-repo drift this repo carried forward from the 1.0.0
+round -- "the SPEC's HTTP wire and the `DoorClient` disagree with the REAL
+synmergia door" -- resolved, at least for the catalog leg.
+
+The drift: `DoorClient.catalog()` over the wire read `observe().nodes`, but a
+game door serves its OWN snapshot (a live world: `player`, `actions[]`,
+`events[]`), never a serialized tree. Against the real door the catalog
+returned `{ ok:false, reason:'observe returned no nodes' }` -- so a brain could
+never auto-wire tools from a live Synmergia door. Proven live (a `DoorClient`
+pointed at `127.0.0.1:3799`).
+
+Shipped:
+
+- **`doorNodes(snapshot)`** (`lib/adapters/synmergia.mjs`, exported): the ONE
+  normalizer that folds the door's flat `actions[]` (each carrying a `kind` and
+  a STABLE `ui:`/`world:` id) into the SPEC node shape. It reuses the SAME
+  role mapping (`roleForKind`) and verb affordance (`actionsForRole`) the local
+  `buildBridge` uses, so the remote catalog and the live tree can never drift.
+- **`DoorClient({ mapNodes })`** (`lib/adapters/vant.mjs`): an optional
+  normalizer; when present, `catalog()` folds the wire snapshot through it.
+  Omit it and a door that serves no `nodes` refuses honestly, as before.
+- Two new test legs (bridgeworks 62 -> 64): `doorNodes` shape + the remote
+  catalog over a REAL world-door wire (a server serving `actions[]`, not
+  `nodes`), including the honest no-`mapNodes` refusal. `npm test` 64/0 + 29/0,
+  `npm run check` 20/0.
+
+Verified live against the running Synmergia door: the remote catalog reads the
+door's own handles (`ui:Login/.../UsernameField` with `set_value`,
+`ui:.../LoginButton`, ...) and advertises the `see` tool.
+
+Still open (unchanged): the `wait_for` wire key -- the door tolerates both
+`timeoutMs` and `timeout_ms`, so the two agree in practice; the SPEC lists
+`timeoutMs` and the door's own comment says `timeout_ms`. Not worth a rename
+while the door accepts both.
+
 ## 2026-11-09 - 1.0.0: the terminal host, the DOM adapter, and the ecosystem split
 
 Session context: the prior session landed the webform generality receipt
