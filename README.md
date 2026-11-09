@@ -5,6 +5,10 @@ human who uses a screen reader and a machine agent — because they need the
 same thing: named, role-tagged nodes with stable handles, a linear traversal,
 and an event stream.
 
+Born in games (the first consumer is the Synmergia MMO), but not a game
+contract: the reference [`webform`](./lib/adapters/webform.mjs) adapter builds
+the same tree from a plain HTML form. Any surface with a door qualifies.
+
 Read the contract: [`SPEC.md`](./SPEC.md). Site: <https://gamestruct.creadev.org>.
 Docs: <https://docs.creadev.org/gamestruct>. Install: `npm install gamestruct`.
 Releasing: [`DEPLOY.md`](./DEPLOY.md).
@@ -69,6 +73,7 @@ client). The library is ESM and has no build step.
 | `lib/bindings/mcp.mjs` | the MCP door (JSON-RPC 2.0: initialize/tools/list/tools/call) |
 | `lib/adapters/synmergia.mjs` | reference WORLD adapter (a game state -> a tree) |
 | `lib/adapters/vant.mjs` | reference BRAIN adapter (a client that drives any door) |
+| `lib/adapters/webform.mjs` | reference NON-GAME adapter (a plain form -> a tree; the generality receipt) |
 | `bin/gamestruct.mjs` | the CLI: `check` (self-checks) and `doctor` (both lanes) |
 
 ## CLI

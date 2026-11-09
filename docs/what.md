@@ -58,6 +58,7 @@ A binding is **transport only**; it never invents state.
 | `lib/bindings/mcp.mjs` | the MCP door |
 | `lib/adapters/synmergia.mjs` | the reference WORLD adapter |
 | `lib/adapters/vant.mjs` | the reference BRAIN adapter |
+| `lib/adapters/webform.mjs` | the reference NON-GAME adapter (a plain form; the generality receipt) |
 | `bin/gamestruct.mjs` | the CLI: `check` and `doctor` |
 
 ## The smallest surface

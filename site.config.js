@@ -18,7 +18,7 @@ export default {
   badge: 'v' + pkg.version,
   tagline: 'One semantic tree. Two lanes. Four primitives.',
   description:
-    'The game-agent lane bridge: one semantic tree serves both a human\'s assistive technology and a machine agent. Accessibility for people and for agents, from one contract.',
+    'The lane bridge: one semantic tree serves both a human\'s assistive technology and a machine agent. Accessibility for people and for agents, from one contract. Born in games; any surface with a door qualifies.',
   url: 'https://gamestruct.creadev.org',
   repo: 'https://github.com/dhaupin/gamestruct',
   author: 'dhaupin',
@@ -68,9 +68,9 @@ export default {
       priority: '1.0',
       changefreq: 'monthly',
       meta: {
-        title: 'gamestruct - the game-agent lane bridge',
+        title: 'gamestruct - the lane bridge',
         description:
-          'One semantic tree, two lanes, four primitives: accessibility for people and for agents, from one contract.',
+          'One semantic tree, two lanes, four primitives: accessibility for people and for agents, from one contract. Born in games; any surface with a door qualifies.',
       },
     },
     {
@@ -130,7 +130,7 @@ export default {
       meta: {
         title: 'Terms | gamestruct',
         description:
-          'Terms of use for gamestruct, the open-source game-agent lane bridge, and for this documentation site. MIT licensed, provided as-is.',
+          'Terms of use for gamestruct, the open-source lane bridge, and for this documentation site. MIT licensed, provided as-is.',
       },
     },
     {

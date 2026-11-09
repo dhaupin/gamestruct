@@ -6,7 +6,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The generality receipt: `gamestruct/adapters/webform`.** A plain HTML form
+  -> a gamestruct tree, with no game loop, player, or HP. It proves the
+  contract is not a game contract - the same four primitives and the same two
+  lanes operate a contact form, a kiosk, or a checkout. Six new test legs
+  (`tests/bridgeworks.test.mjs`); field edits are local, the door call fires
+  once at submit, and an invalid submit refuses by name + announces on the
+  live region.
+
 ### Changed
+
+- **Framing widened from "the game-agent lane bridge" to "the lane bridge."**
+  Games are the first consumer, not the boundary. `SPEC.md` sec 1-2, the
+  README pitch, and `site.config.js` now say so; the reference adapters are
+  the world, the brain, and the non-game form.
 
 - **The web brand badge now DERIVES from `package.json`** (`site.config.js`
   imports it and sets `badge: 'v' + pkg.version`), closing the last hand-copied

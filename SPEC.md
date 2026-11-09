@@ -1,8 +1,8 @@
 # gamestruct — Specification v1
 
-> The game-agent lane bridge. One semantic tree; two lanes: a **human lane**
-> (assistive technology) and an **agent lane** (machine clients). Four
-> primitives. MIT.
+> The lane bridge. One semantic tree; two lanes: a **human lane** (assistive
+> technology) and an **agent lane** (machine clients). Four primitives. MIT.
+> Born in games; not a game contract - any surface with a door qualifies.
 
 Status: **draft, implementation-backed.** The normative rules below are
 executable — `lib/` implements them and `tests/` proves them. Where prose and
@@ -32,11 +32,13 @@ interface**. Both need the same four things:
    region announces; an agent polls).
 
 Build those four once and the surface serves **both** audiences. This
-document is that contract, kept small enough that a game can implement a door
-in an afternoon.
+document is that contract, kept small enough that any surface can implement a
+door in an afternoon.
 
-The name is literal: a game (or any app) exposes a *door*; an agent brain is a
-*client*; the shared vocabulary is the *bridgeworks*.
+The name is literal: an app exposes a *door*; an agent brain is a *client*;
+the shared vocabulary is the *bridgeworks*. Games are the first consumer, not
+the boundary - the reference `webform` adapter builds the same tree from a
+plain HTML form, which is the generality receipt.
 
 ## 2. Scope
 
@@ -50,6 +52,8 @@ gamestruct is **transport- and language-agnostic**. It defines:
 
 It does **not** define: rendering, the game loop, persistence, or any
 particular game. A door implements the primitives; a client consumes them.
+Nothing in the contract is game-specific - the same four primitives operate a
+kiosk, a checkout, a dashboard, or a form (see `lib/adapters/webform.mjs`).
 
 ## 3. The four primitives (NORMATIVE)
 

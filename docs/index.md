@@ -29,7 +29,7 @@ stream. Build those once, and both audiences are served.
 | [The human lane]({{ '/human-lane/' | relative_url }}) | roles, accessible names, focus order, the a11y audit |
 | [The agent lane]({{ '/agent-lane/' | relative_url }}) | the MCP tool catalog, affordances, dispatch |
 | [Bindings]({{ '/bindings/' | relative_url }}) | HTTP + MCP, fail-closed auth |
-| [Adapters]({{ '/adapters/' | relative_url }}) | the synmergia (world) and vant (brain) reference adapters |
+| [Adapters]({{ '/adapters/' | relative_url }}) | the synmergia (world), vant (brain), and webform reference adapters |
 | [CLI]({{ '/cli/' | relative_url }}) | `gamestruct check` and `gamestruct doctor` |
 | [Family status]({{ '/status/' | relative_url }}) | the `family-status@1` dialect gamestruct serves |
 

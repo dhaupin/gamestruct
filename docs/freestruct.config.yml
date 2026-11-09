@@ -4,7 +4,7 @@ site:
   name: gamestruct
   # ORIGIN ONLY - no path. Page paths carry /gamestruct via basePath below.
   url: https://docs.creadev.org
-  description: "The game-agent lane bridge: one semantic tree serves both a human's assistive technology and a machine agent. Accessibility for people and for agents, from one contract."
+  description: "The lane bridge: one semantic tree serves both a human's assistive technology and a machine agent. Accessibility for people and for agents, from one contract. Born in games; any surface with a door qualifies."
 
 basePath: /gamestruct
 outputDir: _site

@@ -12,6 +12,7 @@ import { Bridge, ROLES, ACTIONS, Tree, mintHandle, EventRing } from '../lib/inde
 import { human, agent, bindings } from '../lib/index.mjs';
 import { buildBridge as buildSynmergia, pushLog } from '../lib/adapters/synmergia.mjs';
 import { DoorClient, pursueOne } from '../lib/adapters/vant.mjs';
+import { buildBridge as buildForm, readValues as readFormValues, validate as validateForm } from '../lib/adapters/webform.mjs';
 
 function demo() {
     const b = new Bridge({ name: 'demo' });
@@ -255,4 +256,81 @@ test('vant adapter: an unreachable door is reported, never thrown', async () => 
     const res = await client.observe();
     assert.equal(res.ok, false);
     assert.match(res.reason, /unreachable/);
+});
+
+// --- the generality receipt: a surface that is not a game ------------------
+
+test('webform adapter: a plain form builds the SAME tree both lanes read', () => {
+    const b = buildForm({
+        surface: 'contact',
+        fields: [
+            { id: 'name', label: 'Your name', type: 'text', required: true },
+            { id: 'email', label: 'Email', type: 'email', required: true },
+        ],
+        submit: { label: 'Send' },
+    });
+    // the human lane: every interactive node has an accessible name, audit clean
+    assert.equal(human.audit(b).ok, true);
+    assert.ok(human.render(b).focusOrder.includes('form:field:name'));
+    // the agent lane: one tool per actionable node
+    const tools = agent.toolCatalog(b);
+    assert.ok(tools.some((t) => t._handle === 'form:field:name'));
+    assert.ok(tools.some((t) => t._handle === 'form:submit'));
+});
+
+test('webform adapter: set_value fills a field, and the value is readable back', async () => {
+    const b = buildForm({ fields: [{ id: 'name', label: 'Name', type: 'text' }] });
+    const res = await b.act('form:field:name', 'set_value', 'Ada');
+    assert.equal(res.ok, true);
+    assert.equal(readFormValues(b).name, 'Ada');
+    assert.equal(b.tree.get('form:field:name').value, 'Ada');
+});
+
+test('webform adapter: a radio group is a GROUP of RADIOs, one checked', async () => {
+    const b = buildForm({ fields: [{ id: 'plan', label: 'Plan', type: 'radio', options: ['Free', 'Pro'] }] });
+    assert.equal(b.tree.get('form:field:plan').role, ROLES.GROUP);
+    await b.act('form:field:plan:pro', 'activate');
+    assert.equal(b.tree.get('form:field:plan:pro').checked, true);
+    assert.equal(b.tree.get('form:field:plan:free').checked, false);
+    assert.equal(readFormValues(b).plan, 'Pro');
+});
+
+test('webform adapter: submit refuses an invalid form by name, never silently', async () => {
+    const b = buildForm({
+        fields: [{ id: 'email', label: 'Email', type: 'email', required: true }],
+        submit: { label: 'Send' },
+    });
+    const res = await b.act('form:submit');
+    assert.equal(res.ok, false);
+    assert.equal(res.reason, 'invalid');
+    assert.equal(res.errors[0].field, 'email');
+    // the refusal is announced to the human lane (a live region), not swallowed
+    const live = b.events(0).events.filter((e) => e.kind === 'announce');
+    assert.ok(live.length >= 1);
+});
+
+test('webform adapter: a valid form submits once and forwards its values', async () => {
+    const sent = [];
+    const b = buildForm({
+        fields: [{ id: 'name', label: 'Name', type: 'text', required: true }],
+        submit: { label: 'Send' },
+    }, { send: async (verb, args) => { sent.push([verb, args]); return { ok: true }; } });
+    await b.act('form:field:name', 'set_value', 'Ada');
+    const res = await b.act('form:submit');
+    assert.equal(res.ok, true);
+    assert.equal(sent.length, 1);
+    assert.equal(sent[0][0], 'submit');
+    assert.equal(sent[0][1].values.name, 'Ada');
+});
+
+test('webform adapter: validate reports required + malformed email honestly', () => {
+    const spec = {
+        fields: [
+            { id: 'name', label: 'Name', type: 'text', required: true },
+            { id: 'email', label: 'Email', type: 'email' },
+        ],
+    };
+    assert.equal(validateForm(spec, { name: 'Ada', email: 'not-an-email' }).ok, false);
+    assert.equal(validateForm(spec, { name: 'Ada', email: 'ada@example.com' }).ok, true);
+    assert.equal(validateForm(spec, {}).errors.length, 1);
 });

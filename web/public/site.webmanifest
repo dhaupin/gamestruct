@@ -1,7 +1,7 @@
 {
   "name": "gamestruct",
   "short_name": "gamestruct",
-  "description": "The game-agent lane bridge: one semantic tree serves both a human's assistive technology and a machine agent. Accessibility for people and for agents, from one contract.",
+  "description": "The lane bridge: one semantic tree serves both a human's assistive technology and a machine agent. Accessibility for people and for agents, from one contract. Born in games; any surface with a door qualifies.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#10131a",

@@ -4,7 +4,7 @@
 title: gamestruct
 baseurl: /gamestruct # the docs deploy path (GitHub Pages project path)
 url: https://docs.creadev.org
-description: "The game-agent lane bridge: one semantic tree serves both a human's assistive technology and a machine agent. Accessibility for people and for agents, from one contract."
+description: "The lane bridge: one semantic tree serves both a human's assistive technology and a machine agent. Accessibility for people and for agents, from one contract. Born in games; any surface with a door qualifies."
 
 # Identity the layout renders (docs/_layouts/default.html reads these).
 repo: https://github.com/dhaupin/gamestruct

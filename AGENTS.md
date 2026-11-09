@@ -27,6 +27,7 @@ lib/bindings/http.mjs     the HTTP door
 lib/bindings/mcp.mjs      the MCP door (JSON-RPC 2.0)
 lib/adapters/synmergia.mjs  reference WORLD adapter
 lib/adapters/vant.mjs       reference BRAIN adapter
+lib/adapters/webform.mjs    reference NON-GAME adapter (a plain form; the generality receipt)
 lib/selfcheck.mjs         the self-checks `gamestruct check` runs
 lib/index.mjs             the barrel
 tests/bridgeworks.test.mjs  the suite
