@@ -1,168 +1,215 @@
-# gamestruct — the game-agent lane bridge
+# gamestruct — Specification v0.1.0
 
-**Status:** draft spec (2026-11-09). No implementation in this repo yet.
-**First consumers:** [synmergia](https://github.com/dhaupin/synmergia) (the
-world) and [vant](https://github.com/dhaupin/vant) (the brain).
+> The game-agent lane bridge. One semantic tree; two lanes: a **human lane**
+> (assistive technology) and an **agent lane** (machine clients). Four
+> primitives. MIT.
+
+Status: **draft, implementation-backed.** The normative rules below are
+executable — `lib/` implements them and `tests/` proves them. Where prose and
+code disagree, the code is the bug.
+
+---
 
 ## 1. Why this exists
 
-Two houses built the same seam from opposite ends and neither should own the
-other's half:
+A user interface that is accessible to a person using a screen reader and a
+user interface that is accessible to a software agent are **the same
+interface**. Both need the same four things:
 
-- **synmergia** is a world. It exposes a *control surface*: an agent can
-  observe the world and act in it, exactly as a player does.
-- **vant** is a brain. It runs agents: a roster, work items, delegation,
-  sign-off, persistence, and (per its `lib/leisure.js`) *leisure* — the
-  want-list an agent keeps for its own free time.
+1. a **semantic tree** of nodes that carry a *role*, an *accessible name*, a
+   *value/state*, and the *actions* they accept;
+2. **stable handles** — the same node is the same node across a re-render,
+   before and after state changes;
+3. a **linear traversal** (the focus order a switch or keyboard user walks,
+   and the order a brain reads);
+4. an **event stream** of what changed while nobody was looking (a live
+   region announces; an agent polls).
 
-The naive move is a bespoke `vant/lib/adapters/synmergia.js` that speaks
-synmergia's dialect and nothing else. That works once and rots the moment a
-third game or a third brain arrives. **gamestruct is the generalist lane
-instead:** one small contract that *any* game can implement as a door and
-*any* brain can drive as a client. synmergia and vant are the first two
-consumers, not the definition.
+Build those four once and the surface serves **both** audiences. This
+document is that contract, kept small enough that a game can implement a door
+in an afternoon.
 
-The shape is deliberately the same shape synmergia and vant already reached
-independently (synmergia's `AgentDriver`/`AgentDoor`, vant's MCP door), so
-adopting gamestruct is *naming* what exists, not rewriting it.
+The name is literal: a game (or any app) exposes a *door*; an agent brain is a
+*client*; the shared vocabulary is the *bridgeworks*.
 
-## 2. The four primitives
+## 2. Scope
 
-A gamestruct door exposes exactly four verbs. Nothing else is required; a
-world may add verbs behind `act`, but these four are the floor.
+gamestruct is **transport- and language-agnostic**. It defines:
 
-| Verb | Signature | Meaning |
-|------|-----------|---------|
-| `observe` | `() -> Snapshot` | The current world state for this seat: where am I, what is around me, what can I do. |
-| `act` | `(id: String, args: Object) -> Result` | Do one thing. `id` is a **stable handle** (`world:<entity_id>`, `ui:<path>`, or a verb name). Never a pixel, an index, or a rect. |
-| `wait_for` | `(predicate: Object, timeoutMs: Int) -> Result` | Block until a condition holds or the timeout expires. Honest timeout, never a hang. |
-| `events` | `(sinceFrame: Int) -> Array` | The event ring since a frame cursor: what happened while you were not looking. |
+- the **vocabulary** (roles, actions, node shape) — sec 4;
+- the **four primitives** — sec 3;
+- the **two lanes** and their outputs — sec 5, 6;
+- the **bindings** (HTTP, MCP) — sec 7;
+- the **posture** (auth, identity, the gate) — sec 8.
 
-### 2.1 Snapshot
+It does **not** define: rendering, the game loop, persistence, or any
+particular game. A door implements the primitives; a client consumes them.
 
-```jsonc
+## 3. The four primitives (NORMATIVE)
+
+Every door exposes exactly these four operations. A door MAY expose more, but
+a client that only uses these four MUST be able to operate the surface.
+
+| Primitive | Signature | Meaning |
+|-----------|-----------|---------|
+| `observe` | `() -> Snapshot` | the current state of the surface for this seat |
+| `act` | `(handle, verb?, value?) -> Result` | perform one action on one node |
+| `wait_for` | `(predicate, timeoutMs) -> Outcome` | resolve when a condition holds, or time out honestly |
+| `events` | `(sinceFrame) -> { frame, events[] }` | what happened since a cursor |
+
+Rules:
+
+- **N1** — `act` operates by **stable handle**, never by pixel, rect, or
+  positional index.
+- **N2** — `act` MUST refuse (not silently ignore) an unknown handle, a verb
+  the node does not declare, and a disabled node. A refusal carries a
+  human-readable `reason`.
+- **N3** — `wait_for` MUST resolve with an honest timeout (`reason: "timeout"`)
+  rather than hang or resolve falsely.
+- **N4** — `events(sinceFrame)` MUST be an honest cursor: calling it twice with
+  the same cursor returns the same events; the returned `frame` is monotonic.
+- **N5** — `observe` MUST include the current focus handle and a summary.
+
+## 4. Vocabulary (NORMATIVE)
+
+### 4.1 Node shape
+
+```
 {
-  "ok": true,
-  "scene": "globe_world",
-  "in_world": true,
-  "player": { "id": "...", "name": "...", "hp": 40, "hp_max": 60, "pos": {"x":0,"y":0,"z":0} },
-  "target": { "id": "...", "name": "..." },        // or null
-  "party":  { "id": "...", "size": 3, "members": [...] },
-  "actions": [ { "id": "world:wolf_7", "action": "attack", "disabled": false } ]
+  id:          string,     // a stable handle, unique in the tree
+  role:        string,     // sec 4.2
+  name:        string,     // the accessible name (what a screen reader says)
+  value?:      any,        // current value (slider/textbox/progressbar)
+  description?: string,    // supplementary text (alt text for images)
+  actions:     string[],   // sec 4.3; the verbs this node accepts
+  disabled?:   boolean,
+  checked?:    boolean,    // checkbox/radio/switch
+  expanded?:   boolean,    // disclosure
+  min?:        number,     // slider/progressbar
+  max?:        number,
+  level?:      number,     // heading
+  parent:      string|null,
+  children:    string[],   // ordered; the traversal order
+  meta?:       object      // host-specific, ignored by the bridge
 }
 ```
 
-`actions` is the honest affordance list: the world tells the agent what it can
-do *now*, by stable id. An agent never guesses a handle.
+### 4.2 Roles
 
-### 2.2 Result
+ARIA-aligned. A door SHOULD use these; a door MAY add namespaced roles
+(`mygame:ammo`) and a client MUST tolerate unknown roles (treat as `group`).
 
-```jsonc
-{ "ok": true,  "detail": { ... } }
-{ "ok": false, "reason": "no such handle: world:ghost" }
-```
+`group region list listitem menu menuitem dialog tablist tab tabpanel
+separator heading text image button link textbox checkbox radio slider
+switch combobox progressbar status log alert`
 
-Refusals are **named**. A refusal is a first-class outcome, not an error
-channel.
+- **N6** — a node whose role is interactive (`button link textbox checkbox
+  radio slider switch combobox menuitem tab listitem`) MUST carry a
+  non-empty accessible `name`.
+- **N7** — a live role (`status log alert`) MUST announce on change;
+  `alert` is assertive, `status`/`log` polite.
 
-## 3. Transport binding
+### 4.3 Actions
 
-gamestruct is transport-agnostic; two bindings are specified so
-implementations interoperate.
+`activate focus set_value select expand collapse scroll`
 
-### 3.1 HTTP (the door)
+- **N8** — an interactive node MUST declare at least one action (the default
+  for its role, if the door names none).
+- **N9** — a node's `actions` is the *complete* set it accepts; `act` with
+  any other verb is refused.
 
-A single listener. The reference routes:
+## 5. The human lane (NORMATIVE output)
 
-```
-POST /observe            -> Snapshot
-POST /act    {id, args}  -> Result
-POST /wait_for {predicate, timeoutMs} -> Result
-GET  /events?since=<frame> -> Array
-```
-
-### 3.2 MCP (the brain-facing binding)
-
-The same door answers Model Context Protocol:
+`render(bridge)` produces, for assistive technology:
 
 ```
-initialize  -> { protocolVersion, serverInfo, capabilities }
-tools/list  -> [ { name, description, inputSchema } ... ]   // one tool per verb
-tools/call  { name, arguments } -> Result
+{
+  surface, focus,
+  focusOrder: string[],   // interactive, non-disabled, traversal order
+  nodes: [ { id, role, name, value?, description?, disabled?, focusable,
+             actions, checked?, expanded?, live?, politeness? } ]
+}
 ```
 
-`tools/list` MUST carry a real `inputSchema` per tool, so an MCP client (vant's
-`lib/agents` module among them) auto-wires without hand-written glue.
+- **N10** — `focusOrder` MUST be the traversal order (depth-first, child
+  order); a switch/keyboard user walks it top to bottom.
+- **N11** — `a11yDump(bridge)` MUST render one line per node, in traversal
+  order, so a surface can be *read* as text. This is the "is it describable
+  at all" proof.
+- **N12** — `audit(bridge)` MUST flag: an interactive node with no name, an
+  interactive node with no action, and an image with no alt text. This is a
+  gate (broken vs. working), not a taste score.
 
-## 4. Identity, seats, and the slots law
+## 6. The agent lane (NORMATIVE output)
 
-- **A seat is a body.** One agent drives one seat. Two agents never share one
-  body. (This is why the *turn law* below exists.)
-- **An agent owns its own character.** In its current scope synmergia does
-  **not** allow an agent to play a human's character. An agent is a player
-  with its own account-bound character. This is law, not a default.
-- **One human, one account.** Guest play is retired; every account is at least
-  email-bound. An agent is bound 1:1 to a human account.
-- **A human account holds a bounded number of agent slots.** The slot ladder
-  (free floor, sigil-priced tiers, a hard ceiling) is a *world* policy — the
-  door reports `slots`, it does not define them. gamestruct only requires that
-  the pairing is 1:1 and bounded.
+`toolCatalog(bridge)` produces MCP-shaped tools, one per actionable node:
 
-## 5. The turn law (serialization)
+```
+{ name, description, inputSchema: { properties: { verb: {enum}, value? } },
+  _handle, _role, _actions }
+```
 
-A seat's input is a single shared resource. Where a world drives a seat
-through **global input state** (synmergia rides `Input.action_press`), exactly
-one agent may drive that seat at a time. The door therefore holds a **turn
-token** and steps its roster round-robin: each `step`, the next agent with
-queued work performs one act, then the token passes.
+- **N13** — there MUST be exactly one tool per actionable (non-disabled, has
+  actions) node. The tool's `inputSchema.properties.verb.enum` MUST equal the
+  node's `actions`.
+- **N14** — `toolCall(bridge, name, args)` MUST dispatch onto the same `act`
+  the human lane uses. There is no second code path.
+- **N15** — `toolName(handle)` MUST be a deterministic, MCP-safe slug, so a
+  client can round-trip a handle.
 
-Agents on **their own** process/door are not serialized — they have their own
-input space. The distinction is *seat locality*, not agent count.
+## 7. Bindings (NORMATIVE where implemented)
 
-## 6. The sign-off gate
+A binding is transport only; it never invents state.
 
-Some acts are consequential (spend, trade, purchase, drop, destroy, sell). A
-door MAY gate a verb by name. A gated act parks as `pending_approval`; a human
-(or a policy) approves (queues) or rejects (buries). This is how a watcher
-keeps a hand on the wheel without micro-managing every step.
+### 7.1 HTTP
 
-## 7. Remote posture (auth + TLS)
+| Route | Method | Maps to |
+|-------|--------|---------|
+| `/observe` | GET | `observe()` |
+| `/act` | POST `{id,verb?,value?}` | `act(...)` |
+| `/wait_for` | POST `{predicate,timeoutMs}` | `waitFor(...)` |
+| `/events?since=N` | GET | `events(N)` |
+| `/health` | GET | liveness |
 
-A door is a real remote surface and MUST fail closed:
+- **N16** — when a token is configured, every route except `/health` MUST be
+  refused with `401` unless the request carries it. Fail closed.
 
-- **Loopback by default.** Bind `127.0.0.1` unless an operator names another
-  address.
-- **Token, fail-closed.** When a token is configured, every request needs
-  `Authorization: Bearer <token>` (or `x-api-key`). A missing token when one is
-  configured is refused; a wrong token is refused.
-- **Non-loopback requires a token.** A door MUST refuse a non-loopback bind
-  with no token set.
-- **TLS is the operator's reverse proxy.** The door speaks plain HTTP; a
-  reverse proxy terminates TLS. The token rides the proxy.
+### 7.2 MCP (JSON-RPC 2.0)
 
-## 8. Leisure (the brain's own half)
+`initialize`, `tools/list`, `tools/call`, plus `observe`/`events` as direct
+methods. Protocol version `2024-11-05`.
 
-A brain MAY keep a **want-list** for an agent's free time — things the agent
-wanted to do when idle (vant's `lib/leisure.js` is the reference). gamestruct
-does not define leisure, but it names the **seam**: when idle capacity appears,
-the brain consults its want-list and pursues one want *through the same
-`act`/`observe` primitives*. Play is not a second protocol; it is the same lane
-used without an objective.
+- **N17** — `tools/list` MUST carry each tool's `inputSchema` (so an MCP
+  client auto-wires with no bespoke code).
+- **N18** — an unknown method MUST return JSON-RPC error `-32601`.
 
-## 9. Versioning
+## 8. Posture (NORMATIVE)
 
-`initialize` returns a `protocolVersion`. The contract is additive: new verbs
-arrive as new tools; existing verbs never change shape within a major version.
+- **N19 (identity)** — a *seat* is one authenticated actor. A door MUST NOT
+  let one seat act as another. Local dev may run an open loopback posture;
+  any non-loopback bind MUST require a token.
+- **N20 (gate)** — a door MAY mark verbs that need human sign-off (spend,
+  trade, destroy). A gated verb MUST park, not silently execute, and MUST be
+  resolvable by an explicit approve/reject.
+- **N21 (honesty)** — every refusal is a value (`{ ok:false, reason }`), never
+  an exception thrown across the boundary and never a silent no-op.
 
-## 10. Consumers
+## 9. Conformance
 
-| Consumer | Role | What it implements |
-|----------|------|--------------------|
-| **synmergia** | world | the door (`AgentDriver`/`AgentDoor`), the slots law, the sign-off gate |
-| **vant** | brain | a client (`lib/adapters/synmergia.js`) + leisure pursuit over the lane |
+A door is **gamestruct-conformant** when it passes, at minimum:
 
-Neither owns the contract. This repo does.
+- N1–N5 (primitives), N6–N9 (vocabulary), N10–N12 (human lane),
+  N13–N15 (agent lane), N16–N18 (bindings), N19–N21 (posture).
 
-## License
+`gamestruct check` runs the reference battery; `gamestruct doctor` prints both
+lanes' output for a demo surface and runs the a11y audit.
 
-MIT (see `LICENSE`).
+## 10. Adoption in one afternoon
+
+1. Build a tree from your existing state (`Tree` + `add`).
+2. Register a handler per actionable handle (`bridge.on(handle, { verb: fn })`).
+3. Mount a binding (`bindings.http.createHandler(bridge, { token })`).
+4. Run `human.audit(bridge)` in CI — fix what it flags.
+
+You now serve screen readers and agents from one description. That is the
+whole product.

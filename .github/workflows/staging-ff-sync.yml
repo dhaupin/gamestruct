@@ -1,0 +1,31 @@
+# staging-ff-sync - after a promotion to main, fast-forward the permanent
+# staging integration branch to main. Non-destructive by construction: a
+# fast-forward-only refspec, never a merge, never a force-push.
+
+name: Sync staging to main
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: staging-ff-sync
+  cancel-in-progress: false
+
+jobs:
+  ff-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fast-forward staging to main
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git init -q .
+          git remote add origin "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch -q origin main staging
+          git push origin origin/main:refs/heads/staging

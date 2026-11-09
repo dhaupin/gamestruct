@@ -1,0 +1,25 @@
+# gamestruct docs nav (freestruct menu layer format). URLs are BASEURL-RELATIVE:
+# the layout prefixes site.baseurl, so the same nav.yml works on any deploy path.
+
+- title: Getting Started
+  items:
+  - title: Overview
+    url: /
+  - title: The contract
+    url: /contract/
+
+- title: The two lanes
+  items:
+  - title: The human lane
+    url: /human-lane/
+  - title: The agent lane
+    url: /agent-lane/
+
+- title: Reference
+  items:
+  - title: Bindings
+    url: /bindings/
+  - title: Adapters
+    url: /adapters/
+  - title: CLI
+    url: /cli/

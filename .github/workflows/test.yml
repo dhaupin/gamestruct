@@ -1,0 +1,59 @@
+name: test
+
+# The battery: the bridgeworks suite, the self-checks, the landing build, and
+# the docs build - all on every push/PR. The family tooling is wired before
+# the first real consumer so the first adapter someone adds is gated from its
+# first commit.
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  battery:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '22'
+
+      # The node:test spine + the syntax/sync/self-check battery. Same legs the
+      # prepublishOnly gate runs, so a release cannot outrun its tests.
+      - name: Suite
+        run: npm test
+
+      - name: Syntax + self-checks + site sync
+        run: npm run check
+
+      - name: Doctor (both lanes on a demo surface)
+        run: npm run doctor
+
+      # The landing builds through prestruct's own audit (which ends "0
+      # failures"): prerender, inject-brand, sitemap, llms.txt.
+      - name: Install web deps
+        run: npm install --prefix web --no-audit --no-fund
+
+      - name: Web build
+        run: npm run build --prefix web
+
+      # Jekyll build of docs/ - the PR coverage the docs-deploy lane does not
+      # give (that workflow runs on pushes only). Ruby deps ride the Gemfile.
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+          working-directory: './docs'
+
+      - name: Docs build
+        run: cd docs && bundle exec jekyll build
+        env:
+          JEKYLL_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

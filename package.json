@@ -1,27 +1,62 @@
 {
   "name": "gamestruct",
   "version": "0.1.0",
-  "description": "The game-agent lane bridge: one contract any game can implement as a door and any brain can drive as a client.",
-  "license": "MIT",
   "type": "module",
+  "description": "gamestruct - the game-agent lane bridge: one semantic tree that serves both a human's assistive technology and a machine agent. Four primitives (observe/act/wait_for/events), two lanes, one contract.",
   "files": [
+    "bin",
+    "lib",
+    "docs",
+    "tests",
     "SPEC.md",
     "README.md",
+    "AGENTS.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
+  "exports": {
+    ".": "./lib/index.mjs",
+    "./roles": "./lib/roles.mjs",
+    "./tree": "./lib/tree.mjs",
+    "./bridge": "./lib/bridge.mjs",
+    "./events": "./lib/events.mjs",
+    "./human": "./lib/profiles/human.mjs",
+    "./agent": "./lib/profiles/agent.mjs",
+    "./http": "./lib/bindings/http.mjs",
+    "./mcp": "./lib/bindings/mcp.mjs",
+    "./adapters/synmergia": "./lib/adapters/synmergia.mjs",
+    "./adapters/vant": "./lib/adapters/vant.mjs"
+  },
+  "bin": {
+    "gamestruct": "bin/gamestruct.mjs"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check bin/gamestruct.mjs && node --check lib/index.mjs && node --check lib/roles.mjs && node --check lib/tree.mjs && node --check lib/events.mjs && node --check lib/bridge.mjs && node --check lib/selfcheck.mjs && node --check lib/profiles/human.mjs && node --check lib/profiles/agent.mjs && node --check lib/bindings/http.mjs && node --check lib/bindings/mcp.mjs && node --check lib/adapters/synmergia.mjs && node --check lib/adapters/vant.mjs && node --check scripts/sync-site.mjs && node scripts/sync-site.mjs --check && node bin/gamestruct.mjs check",
+    "sync": "node scripts/sync-site.mjs",
+    "sync:check": "node scripts/sync-site.mjs --check",
+    "doctor": "node bin/gamestruct.mjs doctor",
+    "prepublishOnly": "npm test && npm run check"
+  },
   "keywords": [
-    "game",
-    "agent",
+    "accessibility",
+    "a11y",
+    "agents",
     "mcp",
+    "aria",
+    "screen-reader",
+    "game",
     "bridge",
-    "spec",
-    "specification"
+    "contract"
   ],
+  "author": "dhaupin",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dhaupin/gamestruct.git"
   },
-  "scripts": {
-    "test": "node --test"
-  }
+  "homepage": "https://gamestruct.creadev.org"
 }

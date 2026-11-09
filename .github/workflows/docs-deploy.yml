@@ -1,0 +1,34 @@
+# Deploy Docs - a THIN caller of THE one docs lane (dhaupin/freestruct).
+#
+# The caller owns: the trigger, the permissions, the concurrency group, and
+# this repo's input pins (ruby 3.4; the freestruct engine pinned EXACT, never
+# a range). The lane owns the runbook, the pinned tool installs, and the
+# main-gated deploy job.
+#
+# The docs baseurl is generated from site.config.js (see docs/_config.yml);
+# set the Pages custom domain once in the repo's Pages settings.
+
+name: Deploy Docs
+
+on:
+  push:
+    branches: [main, staging]
+    paths: ['docs/**', 'site.config.js', 'scripts/sync-site.mjs', '.github/workflows/docs-deploy.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  docs:
+    # Pinned to the lane's SHA (pins, never floats).
+    uses: dhaupin/freestruct/.github/workflows/docs-lane.yml@7dfb1722d16b2ee173e8d4cbbd6106eecec11a1a # main
+    with:
+      ruby-version: '3.4'
+      freestruct-version: '1.3.0'
