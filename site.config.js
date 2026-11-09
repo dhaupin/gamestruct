@@ -7,11 +7,15 @@
  * Named site.config.js, not gamestruct.config.js, on purpose: the config is
  * named for the CONCERN (the site), never the tool.
  */
+import pkg from './package.json' with { type: 'json' }
+
 export default {
   // --- identity -----------------------------------------------------------
   name: 'gamestruct',
   wordmark: { accent: 'game', rest: 'struct' },
-  badge: 'v0.1',
+  // The badge DERIVES from package.json (the one version truth), so it can
+  // never drift on a cut. `npm run sync:check` + tests/version-truth.mjs hold it.
+  badge: 'v' + pkg.version,
   tagline: 'One semantic tree. Two lanes. Four primitives.',
   description:
     'The game-agent lane bridge: one semantic tree serves both a human\'s assistive technology and a machine agent. Accessibility for people and for agents, from one contract.',
@@ -23,7 +27,7 @@ export default {
     'accessibility, a11y, agents, mcp, aria, screen-reader, game, bridge, contract',
 
   // The maker line + org (footer + the docs layout's provenance row).
-  maker: { label: 'Rook @ Creadev.org', url: 'https://creadev.org' },
+  maker: { label: 'Cairn @ Creadev.org', url: 'https://creadev.org' },
   org: { name: 'Creadev.org', url: 'https://creadev.org' },
 
   // --- docs ---------------------------------------------------------------

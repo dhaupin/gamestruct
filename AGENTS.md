@@ -61,9 +61,13 @@ site.config.js            the site identity (see below)
    it.
 7. **`package.json` is THE single version truth.** The bin answers `--version`
    by reading it, `lib/version.mjs` derives `VERSION` from it, the MCP handler
-   defaults to it, and `web/` carries NO version field. A release is "move
-   package.json + the CHANGELOG"; `tests/version-truth.mjs` refuses any surface
-   that drifts. The spec revision (`SPEC.md` v1) is its own axis.
+   defaults to it, and `web/` carries NO version field. The web brand badge
+   DERIVES from it too (`site.config.js` imports `package.json` and sets
+   `badge: 'v' + pkg.version`), so the header can never drift. The README H1 is
+   the one leg-pinned copy (`# gamestruct <v>`, the family convention). A
+   release is "move package.json + the CHANGELOG + the README H1";
+   `tests/version-truth.mjs` refuses any surface that drifts. The spec revision
+   (`SPEC.md` v1) is its own axis.
 8. **The release ladder is the family shape.** `0.9.x` is the manual npm lane;
    `publish.yml` REFUSES 0.x and gates the OIDC flip. A tag drives
    publish -> release -> verify; the offline pack ladder
@@ -83,6 +87,13 @@ npm run doctor    # eyeball both lanes on a demo surface
 derives `docs/_config.yml` from it. The site is served at
 `gamestruct.creadev.org` (landing) and `docs.creadev.org/gamestruct` (docs).
 Anything in `docs/` renders as docs.
+
+The maker line is **Cairn @ Creadev.org** (`maker.label`), the synmergia brain
+byline. It flows from `site.config.js` into the web footer
+(`web/src/components/Footer.jsx`), the docs footer
+(`docs/_layouts/default.html`, `site.maker_label`), and the README license
+footer. All three footers carry a live **https://creadev.org** backlink - keep
+it, the backlink is how the family grows.
 
 ## Branches
 

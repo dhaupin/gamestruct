@@ -45,6 +45,19 @@ if (h1) {
   }
 }
 
+// The web brand badge must DERIVE, never hand-copy. site.config.js sets
+// `badge: 'v' + pkg.version`; a literal like `badge: 'v0.1'` is the CAUGHT
+// class (the header drifts on the next cut while the package moves).
+const siteCfg = readFileSync(join(treeRoot, 'site.config.js'), 'utf8')
+const badgeLine = siteCfg.match(/^\s*badge:\s*(.+?),?\s*$/m)
+if (badgeLine) {
+  surfaces.push('site.config.js badge derivation')
+  const expr = badgeLine[1].replace(/,\s*$/, '').trim()
+  if (!/pkg\.version/.test(expr)) {
+    problems.push(`site.config.js badge is ${expr} - it must DERIVE from package.json (badge: 'v' + pkg.version), never a hand-copied literal that drifts`)
+  }
+}
+
 if (problems.length) {
   console.error(`version-truth: FAIL (single truth = package.json ${v})`)
   for (const p of problems) console.error(`  - ${p}`)

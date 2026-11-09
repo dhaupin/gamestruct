@@ -6,6 +6,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **The web brand badge now DERIVES from `package.json`** (`site.config.js`
+  imports it and sets `badge: 'v' + pkg.version`), closing the last hand-copied
+  version surface - the header can no longer drift on a cut. `tests/version-truth.mjs`
+  gained the badge-derivation leg that refuses a literal.
+- **Attribution corrected to `Cairn @ Creadev.org`** (the synmergia brain
+  byline) across the site config, README, and docs. The maker line flows from
+  `site.config.js` into all three footers.
+- **A live `https://creadev.org` backlink is present in all three footers** -
+  the web footer (`Footer.jsx`), the docs footer (`docs/_layouts/default.html`),
+  and the README license line.
+- **README** carries the version-pinned H1 (`# gamestruct 0.9.0`, the family
+  convention) and a `DEPLOY.md` link.
+
 ## [0.9.0] - 2026-11-09
 
 The first publishable cut: the bridgeworks library, the spec, the two

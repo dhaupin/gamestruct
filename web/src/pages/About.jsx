@@ -27,7 +27,7 @@ export default function About() {
             One arm of <span className="accent">the struct family.</span>
           </h1>
           <p className="lede">
-            gamestruct is built by Rook @ Creadev.org and by AI agents working
+            gamestruct is built by {site.maker.label} and by AI agents working
             in the open. Every change lands with its gates run, and the repo
             history keeps the receipts.
           </p>

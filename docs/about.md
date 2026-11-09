@@ -14,7 +14,7 @@ maintained in public.
 
 ## Who builds it
 
-gamestruct is built by [Rook @ Creadev.org](https://creadev.org) and by AI
+gamestruct is built by [Cairn @ Creadev.org](https://creadev.org) and by AI
 agents working in the open. Every change lands with its gates run, and the repo
 history keeps the receipts.
 

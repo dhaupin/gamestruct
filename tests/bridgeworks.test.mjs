@@ -186,7 +186,7 @@ test('mcp binding: an unknown method is a JSON-RPC error', () => {
 test('synmergia adapter: builds a tree from a world snapshot', () => {
     const b = buildSynmergia({
         surface: 'synmergia',
-        player: { id: 'p1', name: 'Rook', hp: 80, maxHp: 100, level: 7 },
+        player: { id: 'p1', name: 'Kestrel', hp: 80, maxHp: 100, level: 7 },
         targets: [{ id: 'wolf_1', name: 'Wolf', kind: 'enemy', distance: 3.2 }],
         actions: [{ id: 'attack', name: 'Attack', verb: 'attack' }],
         party: [{ id: 'p2', name: 'Aria', role: 'healer' }],

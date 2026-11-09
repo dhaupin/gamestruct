@@ -1,4 +1,4 @@
-# gamestruct — the game-agent lane bridge
+# gamestruct 0.9.0
 
 **One semantic tree. Two lanes. Four primitives.** The same surface serves a
 human who uses a screen reader and a machine agent — because they need the
@@ -6,7 +6,8 @@ same thing: named, role-tagged nodes with stable handles, a linear traversal,
 and an event stream.
 
 Read the contract: [`SPEC.md`](./SPEC.md). Site: <https://gamestruct.creadev.org>.
-Docs: <https://docs.creadev.org/gamestruct>.
+Docs: <https://docs.creadev.org/gamestruct>. Install: `npm install gamestruct`.
+Releasing: [`DEPLOY.md`](./DEPLOY.md).
 
 ```js
 import { Bridge, ROLES, human, agent } from 'gamestruct'
@@ -106,4 +107,4 @@ npm run doctor  # print both lanes for a demo surface
 
 ## License
 
-MIT. Made by [Rook @ Creadev.org](https://creadev.org).
+MIT. Made by [Cairn @ Creadev.org](https://creadev.org).
