@@ -13,7 +13,7 @@ reader, a switch, voice control, or a keyboard alone. It produces three things.
 
 ## render(bridge)
 
-A platform-agnostic AT description of every node plus the linear focus order —
+A platform-agnostic AT description of every node plus the linear focus order -
 the walk a switch or keyboard user makes.
 
 ```js
@@ -30,10 +30,10 @@ already understands.
 
 ## a11yDump(bridge)
 
-A flat text dump — one line per node, in traversal order, with the focus
+A flat text dump - one line per node, in traversal order, with the focus
 marked. This is the "is this surface describable at all" proof.
 
-```
+```text
 [*] region "demo"
 [ ]   button "Start game" {activate}
 [ ]   slider "Volume" =50 {set_value}
@@ -57,5 +57,5 @@ const { ok, problems } = human.audit(bridge)
 // problems: [{ id: 'ui:oops', problem: 'interactive node has no accessible name' }]
 ```
 
-Run it in CI. A surface that passes `audit` is not merely "more accessible" —
+Run it in CI. A surface that passes `audit` is not merely "more accessible" -
 it is *usable* by a person who cannot see it.

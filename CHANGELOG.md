@@ -3,6 +3,33 @@
 All notable changes to gamestruct are recorded here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **`labs/battery.json`** — the committed contract for the bridgeworks'
+  self-check battery (`gamestruct-battery@1`). The status emitter reconciles
+  the live run against it: a check that silently disappears reads RED, never a
+  smaller green.
+- **`web/scripts/build-status.mjs`** — the `family-status@1` emitter. Runs the
+  self-checks at web-build time and writes `web/public/status.json` (generated,
+  gitignored - regeneration is the freshness). Wired into `npm run build`.
+- **`web/src/components/FamilyStatusIsland.jsx`** + **`web/src/pages/Status.jsx`**
+  — the `/status` surface: reads every family member's served `/status.json`
+  live, no server, no guessed numbers.
+- **Docs pages** — `start.md`, `why.md`, `what.md`, `about.md`, `status.md`
+  (the `family-status@1` dialect), and `search.md` (Pagefind). The docs nav is
+  regrouped (Start / The two lanes / Reference / Surfaces).
+- **Web pages** — `/start`, `/why`, `/what`, `/about`, `/status`, each with
+  route meta and prerendered HTML.
+
+### Changed
+
+- Docs brought to the family voice: hyphen-only (no em/en dashes), every code
+  fence tagged, and index links made root-absolute (`relative_url`).
+- `.gitignore` (root + `web/`) carries the family docs block; generated
+  `status.json` is ignored.
+
 ## [0.1.0] - 2026-11-09
 
 The first cut: the bridgeworks library, the spec, and the two reference

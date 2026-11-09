@@ -1,0 +1,102 @@
+/**
+ * components/FamilyStatusIsland.jsx - the family status island.
+ *
+ * The family-status@1 contract (docs/status.md): every member of the struct
+ * family serves a status.json at the fixed path /status.json on its site,
+ * generated from its own committed inputs, and every member's status page
+ * reads the others' files with the same schema.
+ *
+ * Honest-data rule: every number is fetched at load from the sibling's served
+ * status.json. A sibling that is not serving the contract yet shows as "not
+ * serving the dialect" - never a guessed row, never a default PASS. One bad
+ * sibling degrades only its own row.
+ */
+import { useEffect, useState } from 'react'
+
+const SIBLINGS = [
+  { name: 'eyestruct', origin: 'https://eyestruct.creadev.org', page: 'https://eyestruct.creadev.org/status' },
+  { name: 'crashtest', origin: 'https://crashtest.creadev.org', page: 'https://crashtest.creadev.org/status' },
+  { name: 'poststruct', origin: 'https://poststruct.creadev.org', page: 'https://poststruct.creadev.org/status' },
+  { name: 'packstruct', origin: 'https://packstruct.creadev.org', page: 'https://packstruct.creadev.org/status' },
+  { name: 'govstruct', origin: 'https://govstruct.creadev.org', page: 'https://govstruct.creadev.org/status' },
+  { name: 'monoforge', origin: 'https://monoforge.creadev.org', page: 'https://monoforge.creadev.org/status' },
+  { name: 'gamestruct', origin: 'https://gamestruct.creadev.org', page: 'https://gamestruct.creadev.org/status' },
+]
+
+function legSummary(legs) {
+  // One line per leg: "selfcheck 17 PASS", built from the file's own numbers -
+  // the island never derives a count of its own.
+  return legs.map((l) => `${l.leg} ${l.cases} ${l.verdict}`)
+}
+
+export default function FamilyStatusIsland() {
+  const [state, setState] = useState({ status: 'loading' })
+
+  useEffect(() => {
+    const ctrl = new AbortController()
+    ;(async () => {
+      const settled = await Promise.all(
+        SIBLINGS.map(async (s) => {
+          try {
+            const res = await fetch(`${s.origin}/status.json`, { signal: ctrl.signal })
+            if (!res.ok) throw new Error(`HTTP ${res.status}`)
+            const data = await res.json()
+            if (data.schema !== 1 || data.contract !== 'family-status@1') {
+              throw new Error(`unsupported dialect${data && data.contract ? ` (${data.contract})` : ''}`)
+            }
+            return { name: s.name, page: (data.site || s.page), ok: true, data }
+          } catch (err) {
+            if (ctrl.signal.aborted) return null
+            return { name: s.name, page: s.page, ok: false, error: String(err.message || err) }
+          }
+        })
+      )
+      if (ctrl.signal.aborted) return
+      setState({ status: 'ok', rows: settled.filter(Boolean) })
+    })()
+    return () => ctrl.abort()
+  }, [])
+
+  if (state.status === 'loading') {
+    return (
+      <p className="island-loading">
+        Reading the family's served status files (each origin's /status.json)...
+      </p>
+    )
+  }
+
+  return (
+    <>
+      <p className="sub">
+        One dialect, every member: each serves its committed verdicts at{' '}
+        <code>/status.json</code> and reads the others. Each row below is that
+        member's own file, fetched live - a red row means the member's own
+        receipts say RED, not that this page thinks so.
+      </p>
+      <div className="table-wrap">
+        <table className="attacks">
+          <thead>
+            <tr>
+              <th>repo</th>
+              <th>legs (cases, verdict)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {state.rows.map((r) => (
+              <tr key={r.name}>
+                <td>
+                  <a href={r.page} target="_blank" rel="noreferrer">{r.name}</a>
+                </td>
+                <td>
+                  {r.ok
+                    ? legSummary(r.data.legs).join(' · ')
+                    : <span className="dash-error">not serving the dialect ({r.error})</span>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  )
+}

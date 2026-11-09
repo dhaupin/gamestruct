@@ -20,7 +20,7 @@ operate the surface.
 
 ## Stable handles
 
-An `act` names a **handle** — a stable id like `ui:start` or
+An `act` names a **handle** - a stable id like `ui:start` or
 `world:target:wolf_1`. Never a pixel, a rect, or a positional index. The whole
 point is that the same handle works before and after a re-render, for the human
 lane and the agent lane alike.
@@ -32,7 +32,7 @@ mintHandle('ui', 'start')   // 'ui:start'
 
 ## The node shape
 
-```
+```json
 {
   id:          'ui:volume',     // stable handle, unique in the tree
   role:        'slider',        // ARIA-aligned role
@@ -60,4 +60,4 @@ bridge.act('ui:nope')
 ```
 
 That is SPEC rule N21. A door that fails quietly is worse than one that fails
-loudly — an agent cannot recover from silence.
+loudly - an agent cannot recover from silence.

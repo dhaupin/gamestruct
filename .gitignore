@@ -1,13 +1,19 @@
 # deps
 node_modules/
+web/node_modules/
 
 # build output
 dist/
 web/dist/
+
+# Docs build products (family gitignore block): an accidental in-tree Jekyll
+# build taints nothing; CI resolves the bundle fresh.
+docs/.bundle/
+docs/vendor/
 docs/_site/
+docs/Gemfile.lock
 docs/.jekyll-cache/
 docs/.jekyll-metadata
-docs/Gemfile.lock
 docs/pagefind/
 docs/pagefind*
 

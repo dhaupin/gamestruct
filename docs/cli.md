@@ -13,14 +13,14 @@ gamestruct ships one command with two useful verbs.
 ## gamestruct doctor
 
 Builds a demo surface, then prints **both lanes** for it and runs the a11y
-audit. It is the truth battery: it never claims a surface is accessible — it
+audit. It is the truth battery: it never claims a surface is accessible - it
 *shows* you the screen-reader text, the MCP tool catalog, and the audit result.
 
 ```bash
 npx gamestruct doctor
 ```
 
-```
+```text
 === HUMAN LANE (what a screen reader reads) ===
 [*] region "demo"
 [ ]   button "Start game" {activate}
@@ -31,9 +31,9 @@ npx gamestruct doctor
 focus order: ui:start -> ui:volume -> ui:mute
 
 === AGENT LANE (what an MCP client auto-wires) ===
-  act__ui__start  — Perform "activate" on button "Start game"
-  act__ui__volume  — Perform "set_value" on slider "Volume" (current: 50)
-  act__ui__mute  — Perform "activate" on checkbox "Mute"
+  act__ui__start  - Perform "activate" on button "Start game"
+  act__ui__volume  - Perform "set_value" on slider "Volume" (current: 50)
+  act__ui__mute  - Perform "activate" on checkbox "Mute"
 
 a11y audit: clean
 ```

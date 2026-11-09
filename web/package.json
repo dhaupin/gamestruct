@@ -6,7 +6,7 @@
   "description": "gamestruct site - the landing the struct family ships from (prestruct prerender + static hosting)",
   "scripts": {
     "dev": "vite",
-    "build": "prestruct build",
+    "build": "node scripts/build-status.mjs && prestruct build",
     "preview": "vite preview"
   },
   "dependencies": {

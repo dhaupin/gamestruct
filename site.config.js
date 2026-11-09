@@ -45,6 +45,11 @@ export default {
   // --- nav vocabulary -----------------------------------------------------
   nav: [
     { label: 'Home', to: '/', end: true, group: 'site' },
+    { label: 'Start', to: '/start', group: 'site' },
+    { label: 'Why', to: '/why', group: 'site' },
+    { label: 'What', to: '/what', group: 'site' },
+    { label: 'About', to: '/about', group: 'site', header: false },
+    { label: 'Status', to: '/status', group: 'site' },
     { label: 'GitHub', href: 'https://github.com/dhaupin/gamestruct', group: 'out' },
   ],
   footerExtras: [
@@ -62,6 +67,56 @@ export default {
         title: 'gamestruct - the game-agent lane bridge',
         description:
           'One semantic tree, two lanes, four primitives: accessibility for people and for agents, from one contract.',
+      },
+    },
+    {
+      path: '/start',
+      priority: '0.9',
+      changefreq: 'monthly',
+      meta: {
+        title: 'Start here | gamestruct',
+        description:
+          'New to gamestruct? Build one semantic tree, wire a handler, and read it through both lanes - the beginner on-ramp, no prior knowledge assumed.',
+      },
+    },
+    {
+      path: '/why',
+      priority: '0.7',
+      changefreq: 'monthly',
+      meta: {
+        title: 'Why | gamestruct',
+        description:
+          'A screen reader and a machine agent fail on the same UI. Why one semantic tree serves both lanes - accessibility and an agent surface are one absence.',
+      },
+    },
+    {
+      path: '/what',
+      priority: '0.7',
+      changefreq: 'monthly',
+      meta: {
+        title: 'What | gamestruct',
+        description:
+          'One zero-dependency library, four primitives, two lanes, one tree. What ships in the box, and the smallest surface a door and a client share.',
+      },
+    },
+    {
+      path: '/about',
+      priority: '0.5',
+      changefreq: 'monthly',
+      meta: {
+        title: 'About | gamestruct',
+        description:
+          'Who builds gamestruct, the struct family it belongs to, the MIT license, and the provenance terms.',
+      },
+    },
+    {
+      path: '/status',
+      priority: '0.5',
+      changefreq: 'weekly',
+      meta: {
+        title: 'Live status | gamestruct',
+        description:
+          'The bridgeworks verdicts on main, read straight from the committed battery - the same files a fresh agent session owns. No server, no hidden state.',
       },
     },
     {

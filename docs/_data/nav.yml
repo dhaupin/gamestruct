@@ -1,15 +1,23 @@
 # gamestruct docs nav (freestruct menu layer format). URLs are BASEURL-RELATIVE:
 # the layout prefixes site.baseurl, so the same nav.yml works on any deploy path.
 
-- title: Getting Started
+- title: Start
   items:
   - title: Overview
     url: /
-  - title: The contract
-    url: /contract/
+  - title: Start here
+    url: /start/
+  - title: Why gamestruct
+    url: /why/
+  - title: What gamestruct is
+    url: /what/
+  - title: About
+    url: /about/
 
 - title: The two lanes
   items:
+  - title: The contract
+    url: /contract/
   - title: The human lane
     url: /human-lane/
   - title: The agent lane
@@ -23,3 +31,16 @@
     url: /adapters/
   - title: CLI
     url: /cli/
+  - title: Family status
+    url: /status/
+  - title: Search
+    url: /search/
+
+- title: Surfaces
+  items:
+  - title: Landing site
+    url: https://gamestruct.creadev.org/
+  - title: GitHub repo
+    url: https://github.com/dhaupin/gamestruct
+  - title: SPEC.md source
+    url: https://github.com/dhaupin/gamestruct/blob/main/SPEC.md

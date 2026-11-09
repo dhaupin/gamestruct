@@ -1,0 +1,23 @@
+{
+  "contract": "gamestruct-battery@1",
+  "note": "The committed shape of the bridgeworks' own self-check battery (lib/selfcheck.mjs, run by `gamestruct check`). The status emitter (web/scripts/build-status.mjs) runs the live battery and reconciles it against this list: a check that passes reads PASS, a check whose name is missing from the live run reads RED (a silently-deleted check is a smaller green, refused), and any live check not listed here reads RED (an unlisted check is unaccounted-for coverage). Edit this file in the same commit that adds or removes a check.",
+  "checks": [
+    "a tree rejects a duplicate handle",
+    "human lane renders an accessible name per interactive node",
+    "human a11y audit is clean on a labeled surface",
+    "human a11y audit catches an unlabeled button",
+    "agent lane builds one tool per actionable node",
+    "agent tool call dispatches onto the same act()",
+    "affordances list matches the interactive nodes",
+    "act refuses an unknown handle",
+    "act refuses a verb the node does not accept",
+    "act records a change event on the ring",
+    "events(since) resumes from a cursor",
+    "mcp binding initializes + lists + calls",
+    "the SAME handle drives both lanes",
+    "waitFor resolves when a predicate holds",
+    "waitFor times out honestly",
+    "http binding serves observe/act/events",
+    "http binding refuses a bad token"
+  ]
+}

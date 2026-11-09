@@ -9,8 +9,8 @@ nav_order: 4
 # The agent lane
 
 The agent lane renders the **same tree** for a machine: an agent brain, an MCP
-client, or a scripted test. It answers the two questions an agent always asks —
-"what can I do here?" and "how do I do it?" — from the one description.
+client, or a scripted test. It answers the two questions an agent always asks -
+"what can I do here?" and "how do I do it?" - from the one description.
 
 ## toolCatalog(bridge)
 
@@ -30,7 +30,7 @@ agent.toolCatalog(bridge)
 // ]
 ```
 
-The `_handle` field is the stable handle the tool drives — the *same* handle
+The `_handle` field is the stable handle the tool drives - the *same* handle
 the human lane walks. That identity is the whole point.
 
 ## affordances(bridge)
@@ -53,4 +53,4 @@ agent.toolCall(bridge, 'act__ui__start', { verb: 'activate' })
 ```
 
 There is no second code path. The tool call lands on the same `act()` the human
-lane uses — which is exactly why the two lanes cannot diverge.
+lane uses - which is exactly why the two lanes cannot diverge.

@@ -49,8 +49,8 @@ unknown method returns JSON-RPC error `-32601`.
 
 ## Posture
 
-- **identity** — a *seat* is one authenticated actor; a door must not let one
+- **identity** - a *seat* is one authenticated actor; a door must not let one
   seat act as another. Local dev may run an open loopback posture; any
   non-loopback bind must require a token.
-- **the gate** — a door may mark verbs that need human sign-off (spend, trade,
+- **the gate** - a door may mark verbs that need human sign-off (spend, trade,
   destroy). A gated verb parks, never silently executes.
