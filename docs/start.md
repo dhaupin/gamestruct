@@ -91,7 +91,7 @@ npx gamestruct doctor
 
 You now serve assistive technology and agents from one description. That is the
 whole on-ramp. Next: [the contract](/contract/) for the normative rules, or
-[the adapters](/adapters/) to see how a real game and a real brain connect.
+[the adapters](/adapters/) to see how a real game, a real brain, a plain HTML form, and a live DOM subtree all connect through the same four primitives. The [`tui`](/cli/) command renders any of them to a terminal, so the human lane works with no pointer at all.
 
 <div class="crosslinks">
 <p><strong>More in these docs:</strong>

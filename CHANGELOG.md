@@ -6,15 +6,38 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-09
+
 ### Added
+
+- **The DOM adapter: `gamestruct/adapters/dom`.** `fromElement(el)` walks a
+  live DOM subtree into the same tree the game and form adapters build,
+  reading the attributes an accessible page already carries (`role`,
+  `aria-*`, `alt`, `title`, `label[for]`) and falling back to the tag name
+  and text. The receipt is sharper than the form's: a page that is already
+  accessible to a screen reader is, with no extra markup, ALREADY a door an
+  agent can drive. Zero dependencies (it duck-types the element interface, so
+  it runs against a real DOM in a browser and a plain fixture in Node).
+
+- **The TUI host: `gamestruct/hosts/tui`.** The human lane on a device with no
+  pointer. `render(bridge)` draws the tree as a text frame; `key(bridge, k)`
+  drives it (`tab` walks the focus order, `enter` runs the node's DEFAULT
+  action, typing sets a value) using the SAME handles the agent lane uses. The
+  new `gamestruct tui` command runs it; on a pipe it prints one frame and
+  exits, so CI can read it.
+
+- **Ten new test legs** (`tests/bridgeworks.test.mjs`, now 47): the DOM adapter
+  (a real element -> both lanes; `label[for]` naming; `aria-hidden` pruned;
+  ARIA role/name order; act routing) and the TUI host (text frame; tab order;
+  `enter` runs the default action, incl. a slider's `set_value`; the status
+  hint).
 
 - **The generality receipt: `gamestruct/adapters/webform`.** A plain HTML form
   -> a gamestruct tree, with no game loop, player, or HP. It proves the
   contract is not a game contract - the same four primitives and the same two
-  lanes operate a contact form, a kiosk, or a checkout. Six new test legs
-  (`tests/bridgeworks.test.mjs`); field edits are local, the door call fires
-  once at submit, and an invalid submit refuses by name + announces on the
-  live region.
+  lanes operate a contact form, a kiosk, or a checkout. Field edits are local,
+  the door call fires once at submit, and an invalid submit refuses by name +
+  announces on the live region.
 
 ### Changed
 
@@ -33,8 +56,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **A live `https://creadev.org` backlink is present in all three footers** -
   the web footer (`Footer.jsx`), the docs footer (`docs/_layouts/default.html`),
   and the README license line.
-- **README** carries the version-pinned H1 (`# gamestruct 0.9.0`, the family
-  convention) and a `DEPLOY.md` link.
+- **README** carries the version-pinned H1 (the family convention) and a
+  `DEPLOY.md` link.
+
+- **The Synmergia adapter is pinned to the REAL door, not an invented shape.**
+  `lib/adapters/synmergia.mjs` now maps the door's actual `observe()` snapshot
+  (player / target / party / actions / events) and reuses the door's own
+  handles (`ui:<path>` / `world:<id>`) UNCHANGED, so `act(handle)` forwards the
+  exact string the door's `activate_by_id` matches. Five legs pin it.
+
+- **The ecosystem split is now explicit.** gamestruct owns the generic lane
+  (primitives, tree, profiles, HTTP + MCP bindings, adapters, hosts); a world
+  owns its door; a brain owns its client. The worked example is the Synmergia
+  door's debloat: it dropped its hand-rolled MCP JSON-RPC + tool catalog
+  (`/call`, `/tools`, `/mcp/exec`) and now serves only the four primitives plus
+  its own `/coord` extension. The protocol layer has ONE owner.
 
 ## [0.9.0] - 2026-11-09
 

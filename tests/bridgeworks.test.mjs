@@ -13,6 +13,19 @@ import { human, agent, bindings } from '../lib/index.mjs';
 import { buildBridge as buildSynmergia, pushLog } from '../lib/adapters/synmergia.mjs';
 import { DoorClient, pursueOne } from '../lib/adapters/vant.mjs';
 import { buildBridge as buildForm, readValues as readFormValues, validate as validateForm } from '../lib/adapters/webform.mjs';
+import { fromElement, roleFor, nameFor } from '../lib/adapters/dom.mjs';
+import * as tui from '../lib/hosts/tui.mjs';
+
+// A duck-typed DOM element (no jsdom; the adapter reads a tiny interface).
+function el(tagName, attributes = {}, children = [], textContent = '') {
+    return {
+        tagName,
+        attributes,
+        children,
+        textContent,
+        getAttribute(n) { return this.attributes[n] != null ? this.attributes[n] : null; },
+    };
+}
 
 function demo() {
     const b = new Bridge({ name: 'demo' });
@@ -184,42 +197,75 @@ test('mcp binding: an unknown method is a JSON-RPC error', () => {
     assert.equal(res.error.code, -32601);
 });
 
-test('synmergia adapter: builds a tree from a world snapshot', () => {
-    const b = buildSynmergia({
-        surface: 'synmergia',
-        player: { id: 'p1', name: 'Kestrel', hp: 80, maxHp: 100, level: 7 },
-        targets: [{ id: 'wolf_1', name: 'Wolf', kind: 'enemy', distance: 3.2 }],
-        actions: [{ id: 'attack', name: 'Attack', verb: 'attack' }],
-        party: [{ id: 'p2', name: 'Aria', role: 'healer' }],
-        inventory: [{ id: 'wep_iron_sword', name: 'Iron Sword', qty: 1 }],
-        log: ['You hit the Wolf for 12.'],
-    });
+// A real Synmergia door `observe()` snapshot (the exact shape
+// agent_driver.observe() emits). Used verbatim so the adapter is pinned to
+// the door, not to an invented shape.
+function doorSnapshot() {
+    return {
+        ok: true,
+        frame: 42,
+        enabled: true,
+        scene: 'GlobeWorld',
+        in_world: true,
+        player: {
+            id: 'p1', name: 'Kestrel',
+            position: { x: 1, y: 2, z: 3 },
+            health: 80, max_health: 100, is_dead: false,
+            level: 7, mana: 40, stamina: 55, char_class: 'cleric', species: 'human',
+        },
+        target: { id: 'wolf_1', name: 'Wolf' },
+        party: { party_id: 'pt1', leader_id: 'p1', members: [{ id: 'p2', name: 'Aria' }] },
+        actions: [
+            { id: 'world:wolf_1', kind: 'entity', action: 'Attack Wolf', detail: '3m away, level 4', disabled: false },
+            { id: 'ui:MainMenu/MenuButtons/StartButton', kind: 'button', action: 'Start game', detail: '', disabled: false },
+        ],
+        events: [{ t: 100, frame: 42, event: 'damage_dealt', data: { a: 'wolf_1', c: 12 } }],
+    };
+}
+
+test('synmergia adapter: maps the REAL door snapshot (not an invented one)', () => {
+    const b = buildSynmergia(doorSnapshot());
     assert.ok(b.tree.has('world:player:hp'));
-    assert.ok(b.tree.has('world:target:wolf_1'));
-    assert.ok(b.tree.has('world:action:attack'));
     assert.equal(b.tree.get('world:player:hp').value, 80);
-    // the human lane sees the target; the agent lane can drive it
-    assert.ok(human.render(b).focusOrder.includes('world:target:wolf_1'));
-    assert.ok(agent.toolCatalog(b).some((t) => t._handle === 'world:action:attack'));
+    assert.equal(b.tree.get('world:player:hp').max, 100);
+    assert.equal(b.tree.get('world:target').value, 'Wolf');
+    // THE HANDLE LAW: the door's own handles survive as node ids, unchanged
+    assert.ok(b.tree.has('world:wolf_1'));
+    assert.ok(b.tree.has('ui:MainMenu/MenuButtons/StartButton'));
+    assert.equal(b.tree.get('world:wolf_1').role, ROLES.LISTITEM);
+    assert.equal(b.tree.get('ui:MainMenu/MenuButtons/StartButton').role, ROLES.BUTTON);
+    // both lanes read the same nodes
+    assert.ok(human.render(b).focusOrder.includes('world:wolf_1'));
+    assert.ok(agent.toolCatalog(b).some((t) => t._handle === 'ui:MainMenu/MenuButtons/StartButton'));
 });
 
-test('synmergia adapter: handlers forward to the door', async () => {
+test('synmergia adapter: act() forwards the door handle VERBATIM', async () => {
     const sent = [];
-    const b = buildSynmergia(
-        { surface: 's', actions: [{ id: 'attack', name: 'Attack', verb: 'attack' }] },
-        { send: async (verb, args) => { sent.push([verb, args]); return { ok: true }; } },
-    );
-    await b.act('world:action:attack', ACTIONS.ACTIVATE);
-    assert.equal(sent.length, 1);
-    assert.equal(sent[0][0], 'act');
-    assert.equal(sent[0][1].verb, 'attack');
+    const b = buildSynmergia(doorSnapshot(), {
+        send: async (verb, args) => { sent.push([verb, args]); return { ok: true }; },
+    });
+    await b.act('ui:MainMenu/MenuButtons/StartButton', ACTIONS.ACTIVATE);
+    await b.act('world:wolf_1', ACTIONS.ACTIVATE);
+    assert.equal(sent.length, 2);
+    assert.deepEqual(sent[0], ['act', { id: 'ui:MainMenu/MenuButtons/StartButton' }]);
+    assert.deepEqual(sent[1], ['act', { id: 'world:wolf_1' }]);
 });
 
-test('synmergia adapter: pushLog feeds the ring', () => {
-    const b = buildSynmergia({ surface: 's' });
-    const n = pushLog(b, ['a', 'b']);
-    assert.equal(n, 2);
-    assert.equal(b.events(-1).events.length, 2);
+test('synmergia adapter: a door event record becomes a readable line', () => {
+    const b = buildSynmergia({ scene: 's' });
+    const n = pushLog(b, [
+        { t: 1, frame: 2, event: 'damage_dealt', data: { a: 'wolf_1', c: 12 } },
+        'You hit the Wolf for 12.',
+        { text: 'plain' },
+    ]);
+    assert.equal(n, 3);
+    assert.equal(b.events(-1).events.length, 3);
+});
+
+test('synmergia adapter: a partial (out-of-world) snapshot still renders', () => {
+    const b = buildSynmergia({ ok: true, frame: 0, in_world: false, player: null, actions: [] });
+    assert.equal(b.name, 'synmergia');
+    assert.ok(b.tree.has('world:log'));
 });
 
 test('vant adapter: DoorClient drives an in-process bridge', async () => {
@@ -333,4 +379,96 @@ test('webform adapter: validate reports required + malformed email honestly', ()
     assert.equal(validateForm(spec, { name: 'Ada', email: 'not-an-email' }).ok, false);
     assert.equal(validateForm(spec, { name: 'Ada', email: 'ada@example.com' }).ok, true);
     assert.equal(validateForm(spec, {}).errors.length, 1);
+});
+
+// --- the second non-game surface: a live DOM subtree -----------------------
+
+test('dom adapter: a real element builds the SAME tree both lanes read', () => {
+    const form = el('form', { id: 'login' }, [
+        el('h1', {}, [], 'Sign in'),
+        el('input', { id: 'user', type: 'text', 'aria-label': 'Username' }),
+        el('button', { id: 'go', type: 'submit' }, [], 'Log in'),
+    ]);
+    const b = fromElement(form);
+    assert.equal(b.tree.get('dom:user').role, ROLES.TEXTBOX);
+    assert.equal(b.tree.get('dom:go').role, ROLES.BUTTON);
+    assert.equal(b.tree.get('dom:user').name, 'Username');
+    assert.equal(human.audit(b).ok, true);
+    assert.ok(agent.toolCatalog(b).some((t) => t._handle === 'dom:user'));
+});
+
+test('dom adapter: a label[for] names its field (real a11y shape)', () => {
+    const form = el('form', { id: 'f' }, [
+        el('label', { for: 'email' }, [], 'Email address'),
+        el('input', { id: 'email', type: 'email' }),
+    ]);
+    const b = fromElement(form);
+    assert.equal(b.tree.get('dom:email').name, 'Email address');
+    assert.equal(human.audit(b).ok, true);
+});
+
+test('dom adapter: aria-hidden subtrees are not in the tree', () => {
+    const doc = el('div', { id: 'root' }, [
+        el('button', { id: 'real' }, [], 'Real'),
+        el('div', { id: 'ghost', 'aria-hidden': 'true' }, [el('button', { id: 'hidden' }, [], 'Nope')]),
+    ]);
+    const b = fromElement(doc);
+    assert.ok(b.tree.get('dom:real'));
+    assert.equal(b.tree.get("dom:ghost"), null);
+    assert.equal(b.tree.get("dom:hidden"), null);
+});
+
+test('dom adapter: roleFor + nameFor follow ARIA order', () => {
+    assert.equal(roleFor(el('input', { type: 'range' })), ROLES.SLIDER);
+    assert.equal(roleFor(el('div', { role: 'switch' })), ROLES.SWITCH);
+    assert.equal(roleFor(el('a', { href: '/x' })), ROLES.LINK);
+    assert.equal(roleFor(el('a', {})), ROLES.TEXT);
+    assert.equal(nameFor(el('img', { alt: 'Logo' })), 'Logo');
+    assert.equal(nameFor(el('button', { 'aria-label': 'Close' }, [], 'x')), 'Close');
+});
+
+test('dom adapter: act() routes through the door with the node handle', async () => {
+    const sent = [];
+    const doc = el('form', { id: 'f' }, [el('input', { id: 'q', type: 'text', 'aria-label': 'Query' })]);
+    const b = fromElement(doc, { act: (h, v, val) => { sent.push([h, v, val]); return { ok: true }; } });
+    const res = await b.act('dom:q', 'set_value', 'hello');
+    assert.equal(res.ok, true);
+    assert.deepEqual(sent, [['dom:q', 'set_value', 'hello']]);
+});
+
+// --- the human lane on a non-visual host: the terminal ---------------------
+
+test('tui host: render is a text frame of the same tree', () => {
+    const b = demo();
+    const frame = tui.render(b, { width: 60 });
+    assert.match(frame, /button "Start game"/);
+    assert.match(frame, /slider "Volume" = 50/);
+    // every rendered line is padded to the frame width (a fixed TUI)
+    for (const line of frame.split('\n')) assert.equal(line.length, 60);
+});
+
+test('tui host: tab walks the focus order, enter runs the default action', () => {
+    const b = demo();
+    assert.deepEqual(tui.focusOrder(b), ['ui:start', 'ui:volume', 'ui:mute']);
+    tui.key(b, 'tab');
+    assert.equal(b.focusId, 'ui:start');
+    const res = tui.key(b, 'enter');
+    assert.equal(res.ok, true);
+    assert.equal(res.action, 'activate');
+    assert.equal(res.id, 'ui:start');
+});
+
+test('tui host: enter on a slider runs set_value, not activate', () => {
+    const b = demo();
+    tui.key(b, 'tab');
+    tui.key(b, 'tab'); // -> ui:volume (a slider)
+    assert.equal(b.focusId, 'ui:volume');
+    const res = tui.key(b, 'enter');
+    assert.equal(res.action, 'set_value');
+});
+
+test('tui host: hint names the focused node and its verbs', () => {
+    const b = demo();
+    tui.key(b, 'tab');
+    assert.match(tui.hint(b), /button.*Start game.*activate/);
 });

@@ -2,15 +2,15 @@
 permalink: adapters/
 layout: default
 title: Adapters
-description: The synmergia (world), vant (brain), and webform reference adapters - how any surface exposes a door, and how a brain drives one.
+description: The synmergia (world), vant (brain), webform, and dom reference adapters - how any surface exposes a door, and how a brain drives one.
 nav_order: 6
 ---
 
 # Adapters
 
-An adapter connects a real system to the bridgeworks. Three reference adapters
-ship with gamestruct: two sides of the game lane (a world, a brain), and one
-that is not a game at all.
+An adapter connects a real system to the bridgeworks. Reference adapters ship
+for the two sides of the game lane (a world, a brain) and for two surfaces that
+are not games at all (an HTML form, a live DOM subtree).
 
 ## synmergia - the world (a door)
 
@@ -26,14 +26,19 @@ import { buildBridge } from 'gamestruct/adapters/synmergia'
 const bridge = buildBridge(snapshot, {
   send: (verb, args) => door.call(verb, args),
 })
-// world:player:hp   progressbar "Health" =80
-// world:target:wolf_1  listitem "Wolf"
-// world:action:attack  button "Attack"
+// world:player:hp            progressbar "Health" =80 (max 100)
+// world:target               status "Target" =Wolf
+// world:wolf_1               listitem "Attack Wolf"   (the door's own handle)
+// ui:MainMenu/.../StartButton button "Start game"     (the door's own handle)
 ```
 
-The snapshot is tolerant: a partial world still renders. Log lines feed the
-event ring (`pushLog`), so the human lane's live region and the agent lane's
-`events` cursor read the same stream.
+The snapshot is the door's REAL `observe()` shape (player / target / party /
+actions / events); a partial world still renders. **The handle law:** the door's
+`actions[].id` is already a stable handle (`ui:<path>` / `world:<id>`) the door
+resolves itself, so the adapter reuses it UNCHANGED - `act(handle)` forwards the
+exact string the door's `activate_by_id` matches. Events feed the ring
+(`pushLog`), so the human lane's live region and the agent lane's `events`
+cursor read the same stream.
 
 ## vant - the brain (a client)
 
@@ -91,3 +96,27 @@ lanes can read - and the door call fires **once, at submit**. Submit refuses an
 invalid form by name (`required`, a malformed email) and announces the refusal
 on the live region, so the human lane hears it and the agent lane reads it as
 an event. Same four primitives, same two lanes, a surface that is not a game.
+
+## dom - the second non-game surface (an accessible page is already a door)
+
+The sharpest generality receipt is the DOM itself. `fromElement(el)` walks a
+live element subtree into the same tree, reading the attributes an accessible
+page already carries - `role`, `aria-*`, `alt`, `title`, and a `label[for]`
+that names its field - and falling back to the tag name and text when they are
+absent. A page that is already accessible to a screen reader needs NO extra
+markup to become a door an agent can drive: the two lanes are one tree read two
+ways.
+
+```js
+import { fromElement } from 'gamestruct/adapters/dom'
+
+const bridge = fromElement(document.querySelector('form#login'), {
+  act: (handle, verb, value) => callDoor(handle, verb, value),
+})
+// dom:user  textbox "Username" {set_value}
+// dom:go    button "Log in" {activate}
+```
+
+The walk duck-types the element interface (`tagName`, `children`,
+`getAttribute`, `textContent`), so it runs against a real DOM in a browser and
+against a plain fixture in Node - zero dependencies, no jsdom.

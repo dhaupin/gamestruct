@@ -59,7 +59,9 @@ A binding is **transport only**; it never invents state.
 | `lib/adapters/synmergia.mjs` | the reference WORLD adapter |
 | `lib/adapters/vant.mjs` | the reference BRAIN adapter |
 | `lib/adapters/webform.mjs` | the reference NON-GAME adapter (a plain form; the generality receipt) |
-| `bin/gamestruct.mjs` | the CLI: `check` and `doctor` |
+| `lib/adapters/dom.mjs` | the reference DOM adapter (a live element -> a tree; an accessible page is already a door) |
+| `lib/hosts/tui.mjs` | the terminal host (the human lane with no pointer) |
+| `bin/gamestruct.mjs` | the CLI: `check`, `doctor`, and `tui` |
 
 ## The smallest surface
 

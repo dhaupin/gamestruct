@@ -2,13 +2,13 @@
 permalink: cli/
 layout: default
 title: The CLI
-description: gamestruct check and gamestruct doctor - the self-checks and the both-lanes demo.
+description: gamestruct check, doctor, and tui - the self-checks, the both-lanes demo, and the terminal host.
 nav_order: 7
 ---
 
 # The CLI
 
-gamestruct ships one command with two useful verbs.
+gamestruct ships one command with three useful verbs.
 
 ## gamestruct doctor
 
@@ -49,6 +49,18 @@ npx gamestruct check
 
 Exit 0 when every check passes, 1 otherwise. It is wired into `npm run check`,
 so it runs on every `prepublishOnly`.
+
+## gamestruct tui
+
+Renders the demo surface to the terminal and drives it with keys - the human
+lane on a device with no pointer. `tab` (or `j`/`down`) walks the focus order,
+`enter` runs the focused node's default action (a button activates, a slider
+takes a value), and `q`/`esc` quits. On a TTY it runs interactively; on a pipe
+it prints one frame and exits, so CI can read it.
+
+```bash
+npx gamestruct tui
+```
 
 ## version / help
 

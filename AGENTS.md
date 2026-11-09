@@ -5,10 +5,12 @@ history goes in `labs/TASKS.md` (create it when the first session needs it).
 
 ## What this repo is
 
-`gamestruct` is the **game-agent lane bridge**: one semantic tree that serves
-BOTH a human's assistive technology (screen reader, switch, voice) and a
+`gamestruct` is the **lane bridge**: one semantic tree that serves BOTH a
+human's assistive technology (screen reader, switch, voice, a terminal) and a
 machine agent (MCP client, brain). Four primitives
-(`observe`/`act`/`wait_for`/`events`), two lanes, one contract.
+(`observe`/`act`/`wait_for`/`events`), two lanes, one contract. Born in games
+(Synmergia is the first world); not a game contract - the `webform` and `dom`
+adapters prove it.
 
 It is a **library + spec**, not a service. There is no build step; the
 package is plain ESM. Node >= 18.
@@ -16,7 +18,7 @@ package is plain ESM. Node >= 18.
 ## Layout
 
 ```
-bin/gamestruct.mjs        the CLI (check, doctor, version, help)
+bin/gamestruct.mjs        the CLI (check, doctor, tui, version, help)
 lib/roles.mjs             role + action vocabulary (ARIA-aligned)
 lib/tree.mjs              the semantic tree + stable handles
 lib/events.mjs            the bounded event ring
@@ -28,6 +30,8 @@ lib/bindings/mcp.mjs      the MCP door (JSON-RPC 2.0)
 lib/adapters/synmergia.mjs  reference WORLD adapter
 lib/adapters/vant.mjs       reference BRAIN adapter
 lib/adapters/webform.mjs    reference NON-GAME adapter (a plain form; the generality receipt)
+lib/adapters/dom.mjs        reference DOM adapter (a live element -> a tree)
+lib/hosts/tui.mjs           the terminal host (the human lane with no pointer)
 lib/selfcheck.mjs         the self-checks `gamestruct check` runs
 lib/index.mjs             the barrel
 tests/bridgeworks.test.mjs  the suite
@@ -69,8 +73,8 @@ site.config.js            the site identity (see below)
    release is "move package.json + the CHANGELOG + the README H1";
    `tests/version-truth.mjs` refuses any surface that drifts. The spec revision
    (`SPEC.md` v1) is its own axis.
-8. **The release ladder is the family shape.** `0.9.x` is the manual npm lane;
-   `publish.yml` REFUSES 0.x and gates the OIDC flip. A tag drives
+8. **The release ladder is the family shape.** `1.0.0` is the first OIDC
+   (provenance) cut; `publish.yml` REFUSES 0.x. A tag drives
    publish -> release -> verify; the offline pack ladder
    (`tests/release-verify.test.cjs`) runs every push. See `DEPLOY.md`.
 
@@ -80,6 +84,7 @@ site.config.js            the site identity (see below)
 npm test          # version-truth + the suite + the ladder legs (must be green)
 npm run check     # node --check every module + sync + the self-checks
 npm run doctor    # eyeball both lanes on a demo surface
+npx gamestruct tui   # eyeball the terminal host (piped prints one frame)
 ```
 
 ## Site identity

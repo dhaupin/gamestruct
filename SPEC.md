@@ -38,7 +38,9 @@ door in an afternoon.
 The name is literal: an app exposes a *door*; an agent brain is a *client*;
 the shared vocabulary is the *bridgeworks*. Games are the first consumer, not
 the boundary - the reference `webform` adapter builds the same tree from a
-plain HTML form, which is the generality receipt.
+plain HTML form, and the `dom` adapter builds it from a live DOM subtree, which
+is the generality receipt. The `tui` host renders the tree to a terminal, so
+the human lane is not tied to a pointer or a screen at all.
 
 ## 2. Scope
 
@@ -53,7 +55,8 @@ gamestruct is **transport- and language-agnostic**. It defines:
 It does **not** define: rendering, the game loop, persistence, or any
 particular game. A door implements the primitives; a client consumes them.
 Nothing in the contract is game-specific - the same four primitives operate a
-kiosk, a checkout, a dashboard, or a form (see `lib/adapters/webform.mjs`).
+kiosk, a checkout, a dashboard, or a form (see `lib/adapters/webform.mjs` and
+`lib/adapters/dom.mjs`).
 
 ## 3. The four primitives (NORMATIVE)
 

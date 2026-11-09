@@ -3,6 +3,51 @@
 Operational history. Stable conventions live in `AGENTS.md`; the normative
 contract lives in `SPEC.md`.
 
+## 2026-11-09 - 1.0.0: the terminal host, the DOM adapter, and the ecosystem split
+
+Session context: the prior session landed the webform generality receipt
+(f55d71d). This round makes the "one semantic tree, two lanes" claim real
+across more surfaces and closes the debloat loop with the world.
+
+Shipped:
+
+- **The DOM adapter** (`lib/adapters/dom.mjs`): `fromElement(el)` walks a live
+  DOM subtree into the tree, reading the ARIA attributes an accessible page
+  already carries (`role`, `aria-*`, `alt`, `title`, `label[for]`) and falling
+  back to tag/text. Duck-types the element interface, so it runs on a real DOM
+  in a browser and a plain fixture in Node (zero deps, no jsdom). The sharpest
+  generality receipt: an accessible page is ALREADY a door.
+- **The TUI host** (`lib/hosts/tui.mjs`): the human lane with no pointer.
+  `render` draws a text frame; `key` drives it (tab walks the focus order,
+  `enter` runs the node's DEFAULT action, typing sets a value) using the SAME
+  handles the agent lane uses. New `gamestruct tui` command; on a pipe it
+  prints one frame and exits.
+- **The Synmergia adapter is now pinned to the REAL door** (`lib/adapters/
+  synmergia.mjs`): it maps the door's actual `observe()` snapshot and reuses the
+  door's own handles (`ui:<path>` / `world:<id>`) UNCHANGED, so `act(handle)`
+  forwards the exact string the door's `activate_by_id` matches. Five legs.
+- **Ten new test legs** (`tests/bridgeworks.test.mjs` now 47): DOM (both lanes,
+  label[for], aria-hidden pruned, role/name order, act routing) + TUI (frame,
+  focus order, default action incl. a slider, hint).
+- **Framing + version**: README/SPEC/docs/AGENTS say "the lane bridge"; the
+  ecosystem split is explicit (gamestruct owns the generic lane; a world owns
+  its door; a brain owns its client). Bumped to **1.0.0** (version-truth PASS).
+
+The debloat (the world side, synmergia staging `7ac65e47`):
+
+- The Synmergia AgentDoor dropped its hand-rolled generic protocol - MCP
+  JSON-RPC (`/call`), a tool catalog with inputSchema, a vant-shaped
+  `/mcp/exec` - because gamestruct now owns it. The door (332 -> 288 lines)
+  serves only the four primitives plus its own `/coord` multi-agent extension.
+  `/act` accepts the gamestruct `{id, verb, value}` body. The web client's dead
+  `/tools` call is gone; its `/coord` call (which the door never served) now
+  works. Receipts: driver 25/0, coordinator 30/0. Vant's client followed
+  (`/mcp/exec` -> `/coord`, `timeoutMs`), test 17/0.
+
+Gates: `npm run check` 17/0, bridgeworks 47/0, release ladder 29/0,
+version-truth PASS, offline pack ladder VERIFIED (21 files, bin --version
+1.0.0), web build 8/8 pages + SEO clean.
+
 ## 2026-11-09 - the first build: the library, the landing, the docs, the battery
 
 Session context: prior session lost. The spec commit (`dfc1195`) was on `main`

@@ -1,4 +1,4 @@
-# gamestruct 0.9.0
+# gamestruct 1.0.0
 
 **One semantic tree. Two lanes. Four primitives.** The same surface serves a
 human who uses a screen reader and a machine agent — because they need the
@@ -6,8 +6,11 @@ same thing: named, role-tagged nodes with stable handles, a linear traversal,
 and an event stream.
 
 Born in games (the first consumer is the Synmergia MMO), but not a game
-contract: the reference [`webform`](./lib/adapters/webform.mjs) adapter builds
-the same tree from a plain HTML form. Any surface with a door qualifies.
+contract: the reference adapters build the same tree from a plain HTML form
+([`webform`](./lib/adapters/webform.mjs)) and from a live DOM subtree
+([`dom`](./lib/adapters/dom.mjs)). Any surface with a door qualifies — and so
+does any host: the [`tui`](./lib/hosts/tui.mjs) host renders the tree to a
+terminal, so the human lane works over SSH with no pointer at all.
 
 Read the contract: [`SPEC.md`](./SPEC.md). Site: <https://gamestruct.creadev.org>.
 Docs: <https://docs.creadev.org/gamestruct>. Install: `npm install gamestruct`.
@@ -74,17 +77,22 @@ client). The library is ESM and has no build step.
 | `lib/adapters/synmergia.mjs` | reference WORLD adapter (a game state -> a tree) |
 | `lib/adapters/vant.mjs` | reference BRAIN adapter (a client that drives any door) |
 | `lib/adapters/webform.mjs` | reference NON-GAME adapter (a plain form -> a tree; the generality receipt) |
-| `bin/gamestruct.mjs` | the CLI: `check` (self-checks) and `doctor` (both lanes) |
+| `lib/adapters/dom.mjs` | reference DOM adapter (a live element -> a tree; an accessible page is already a door) |
+| `lib/hosts/tui.mjs` | the terminal host (the human lane with no pointer: render, key-driven focus, `run()`) |
+| `bin/gamestruct.mjs` | the CLI: `check`, `doctor`, and `tui` |
 
 ## CLI
 
 ```bash
 npx gamestruct doctor   # build a demo surface, print BOTH lanes + the a11y audit
 npx gamestruct check    # run the bridgeworks self-checks
+npx gamestruct tui      # drive the demo surface from the terminal (no pointer)
 ```
 
 `doctor` is the truth battery: it does not claim a surface is accessible — it
-shows the a11y dump, the tool catalog, and the audit result.
+shows the a11y dump, the tool catalog, and the audit result. `tui` renders the
+same tree as a text frame and drives it with keys (`tab`, `enter`); on a pipe
+it prints one frame and exits, so CI can read it.
 
 ## Adopt it in an afternoon
 
@@ -101,6 +109,29 @@ gamestruct sits beside [packstruct](https://github.com/dhaupin/packstruct)
 (packaging) and [memstruct](https://github.com/dhaupin/memstruct) (memory).
 First consumers: [synmergia](https://github.com/dhaupin/synmergia) (the world)
 and [vant](https://github.com/dhaupin/vant) (the brain).
+
+## The ecosystem, and what lives where
+
+gamestruct owns the **generic** lane: the four primitives, the semantic tree,
+the two profiles (human + agent), and the protocol projections — the HTTP
+binding and the MCP binding (JSON-RPC 2.0: `initialize` / `tools/list` /
+`tools/call`). A world implements the door; a brain implements the client.
+
+That ownership is deliberate, and it is what lets a world stay small. When
+Synmergia's agent door first shipped it hand-rolled the whole generic protocol
+— MCP JSON-RPC, a tool catalog, a vant-shaped exec route — inside the game.
+After the debloat the door serves only the four primitives plus its own
+multi-agent extension (`/coord`); the protocol layer has ONE owner, and the
+door is primitive-transport:
+
+| owner | what it owns |
+|-------|--------------|
+| **gamestruct** | the primitives, the tree, the profiles, HTTP + MCP bindings, the adapters, the hosts |
+| **synmergia** | the world: the door (`/observe` `/act` `/wait_for` `/events` `/coord`), the seats, the sign-off gate |
+| **vant** | the brain: the roster, work items, delegation, leisure — driving the door as a gamestruct client |
+
+A second world that speaks the four primitives works with a gamestruct client
+and needs no protocol code of its own. That is the point of the split.
 
 ## Verify before shipping
 

@@ -15,6 +15,7 @@
  */
 
 import { Bridge, ROLES, ACTIONS, VERSION, human, agent } from '../lib/index.mjs';
+import * as tui from '../lib/hosts/tui.mjs';
 
 const argv = process.argv.slice(2);
 const verb = argv[0] || 'help';
@@ -25,6 +26,9 @@ switch (verb) {
         break;
     case 'doctor':
         process.exit(runDoctor());
+        break;
+    case 'tui':
+        process.exit(await runTui());
         break;
     case 'version':
     case '--version':
@@ -41,14 +45,36 @@ switch (verb) {
 }
 
 function printHelp() {
-    console.log(`gamestruct ${VERSION} — the game-agent lane bridge
+    console.log(`gamestruct ${VERSION} — the lane bridge
 
 usage:
   gamestruct check      run the bridgeworks self-checks
   gamestruct doctor     build a demo surface, show both lanes + the audit
+  gamestruct tui        drive the demo surface from the terminal (a non-visual host)
   gamestruct version    print the version
   gamestruct help       this text
 `);
+}
+
+// The terminal host: the human lane on a device without a pointer. Renders
+// the SAME tree the agent lane reads and drives it with keys. Interactive on
+// a TTY; on a pipe it prints one frame and exits (so CI can read it).
+async function runTui() {
+    const bridge = new Bridge({ name: 'demo' });
+    bridge.tree.add(null, { id: 'ui:start', role: ROLES.BUTTON, name: 'Start game' });
+    bridge.tree.add(null, { id: 'ui:volume', role: ROLES.SLIDER, name: 'Volume', value: 50, min: 0, max: 100 });
+    bridge.tree.add(null, { id: 'ui:mute', role: ROLES.CHECKBOX, name: 'Mute', checked: false });
+    bridge.tree.add(null, { id: 'ui:status', role: ROLES.STATUS, name: 'Ready' });
+    bridge.on('ui:start', { activate: () => 'starting' });
+    bridge.on('ui:volume', { set_value: (v) => v });
+    bridge.on('ui:mute', { activate: () => true });
+
+    if (!process.stdout.isTTY) {
+        process.stdout.write(tui.render(bridge, { width: process.stdout.columns || 72 }) + '\n');
+        return 0;
+    }
+    await tui.run(bridge);
+    return 0;
 }
 
 async function runCheck() {
