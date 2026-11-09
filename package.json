@@ -34,6 +34,7 @@
     "sync": "node scripts/sync-site.mjs",
     "sync:check": "node scripts/sync-site.mjs --check",
     "doctor": "node bin/gamestruct.mjs doctor",
+    "playtest": "node labs/playtest.mjs",
     "release:notes": "node scripts/release-notes.cjs",
     "release:verify": "node scripts/verify-release.cjs",
     "ship": "node scripts/ship-from-download.cjs",

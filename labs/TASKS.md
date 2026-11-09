@@ -30,10 +30,17 @@ Shipped:
   catalog over a REAL world-door wire (a server serving `actions[]`, not
   `nodes`), including the honest no-`mapNodes` refusal. `npm test` 64/0 + 29/0,
   `npm run check` 20/0.
+- **`labs/playtest.mjs`** -- the live play-test harness: a reference BRAIN that
+  drives a RUNNING door through all five primitives. This is where `see` earns
+  its keep -- the harness captures a frame at every step and reports the path,
+  so a person can look at what the agent saw. It reads the door's OWN handles
+  live (never a hardcoded id) and treats a refusal as a skipped step.
 
 Verified live against the running Synmergia door: the remote catalog reads the
 door's own handles (`ui:Login/.../UsernameField` with `set_value`,
-`ui:.../LoginButton`, ...) and advertises the `see` tool.
+`ui:.../LoginButton`, ...) and advertises the `see` tool; the harness drove
+CharacterSelect -> GlobeWorld (`in_world: true`, 45 handles, 67 events) with
+five captured frames.
 
 Still open (unchanged): the `wait_for` wire key -- the door tolerates both
 `timeoutMs` and `timeout_ms`, so the two agree in practice; the SPEC lists

@@ -84,6 +84,33 @@ A brain never learns whether the world is local or remote. `pursueOne` is the
 goal, never a second protocol. `see()` is the brain's sight: it returns a
 descriptor the brain reads with its own vision.
 
+A WORLD door serves its own snapshot (`observe()` is a live world: `player`,
+`actions[]`, `events[]`), not a serialized tree. Give the client a `mapNodes`
+normalizer and `catalog()` folds that wire shape into the SPEC node shape:
+
+```js
+import { DoorClient } from 'gamestruct/adapters/vant'
+import { doorNodes } from 'gamestruct/adapters/synmergia'
+
+const client = new DoorClient({ url: 'http://127.0.0.1:3799', mapNodes: doorNodes })
+const cat = await client.catalog()   // tools built from the door's OWN handles
+```
+
+Omit `mapNodes` and the client expects the door to serve `nodes` directly (the
+SPEC shape); a door that serves neither refuses honestly.
+
+### The live play-test harness
+
+`labs/playtest.mjs` is a reference BRAIN: it drives a RUNNING door through all
+five primitives - `observe`, `act`, `wait_for`, `events`, and `see` - reading
+the door's own handles live (never a hardcoded id) and capturing a frame at
+every step. It is where the eyes earn their keep.
+
+```bash
+node labs/playtest.mjs --url http://127.0.0.1:3799
+node labs/playtest.mjs --url http://127.0.0.1:3799 --journey login
+```
+
 ## webform - the surface that is not a game (the generality receipt)
 
 gamestruct was born in games, but the contract is not a game contract: it is
