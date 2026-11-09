@@ -3,6 +3,27 @@
 Operational history. Stable conventions live in `AGENTS.md`; the normative
 contract lives in `SPEC.md`.
 
+## 2026-11-09 - the release-post convention, and the 1.1.0 cut
+
+Session context: the family convention (`docs/discussions/`, one
+`announcing-vX.Y.Z.md` per release, the file IS the post) had not been ported
+to gamestruct. Port it, then cut 1.1.0 through the family ladder.
+
+Shipped:
+
+- **`docs/discussions/`** - the release-post convention, following crashtest's
+  index (the family source of truth). `index.md` carries the conventions
+  (one file per release, the file IS the post, draft against a RELEASED
+  version only, posting mechanics stay in the index) and an index table; a
+  post per shipped release: `announcing-v1.0.0.md` (against the npm tarball)
+  and `announcing-v1.1.0.md` (staged for the tag).
+- **CHANGELOG date fixed**: the 1.1.0 section read `2026-11-04`; every 1.1.0
+  commit is `2026-11-09`, so the section date was drift. Corrected to match
+  the shipped day (the release-notes extraction feeds the GH release body, so
+  a wrong date is published, not cosmetic).
+- **The 1.1.0 cut**: staging fast-forwarded to main, tag `v1.1.0` pushed, the
+  publish ladder (publish -> release -> verify) run end-to-end.
+
 ## 2026-11-04 - the remote catalog reads a world door's own snapshot
 
 Session context: the cross-repo drift this repo carried forward from the 1.0.0

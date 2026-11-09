@@ -37,6 +37,7 @@ lib/index.mjs             the barrel
 tests/bridgeworks.test.mjs  the suite
 web/                      the landing (prestruct + Vite + React; gamestruct.creadev.org)
 docs/                     the Jekyll docs (rendered at docs.creadev.org/gamestruct)
+docs/discussions/         the release-post convention (index.md + one announcing-vX.Y.Z.md per release; the file IS the GitHub Discussions post)
 scripts/sync-site.mjs     generates docs/_config.yml + web public files from site.config.js
 scripts/release-notes.cjs   the GH release body extractor (from CHANGELOG.md)
 scripts/verify-release.cjs  the post-publish trust ladder (npm + GH release)
