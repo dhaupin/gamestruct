@@ -100,7 +100,7 @@ export default {
       meta: {
         title: 'What | gamestruct',
         description:
-          'One zero-dependency library, four primitives, two lanes, one tree. What ships in the box, and the smallest surface a door and a client share.',
+          'One zero-dependency library, four primitives (plus the optional eyes), two lanes, one tree. What ships in the box, and the smallest surface a door and a client share.',
       },
     },
     {

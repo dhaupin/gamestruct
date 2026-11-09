@@ -8,10 +8,10 @@ nav_order: 1
 
 # gamestruct docs
 
-**One semantic tree. Two lanes. Four primitives.** gamestruct is the shared
-contract between a game world (a *door*) and an agent brain (a *client*) - built
-so the **same** surface serves a person using a screen reader and a machine
-agent.
+**One semantic tree. Two lanes. Four primitives — plus the eyes.** gamestruct
+is the shared contract between a game world (a *door*) and an agent brain (a
+*client*) - built so the **same** surface serves a person using a screen reader
+and a machine agent.
 
 The insight is simple and load-bearing: a UI that is accessible to a human with
 assistive technology and a UI that is accessible to an agent need the *same*

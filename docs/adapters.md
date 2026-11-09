@@ -40,11 +40,31 @@ exact string the door's `activate_by_id` matches. Events feed the ring
 (`pushLog`), so the human lane's live region and the agent lane's `events`
 cursor read the same stream.
 
+### Seeing the world (the eyes)
+
+Pass a `see` sender and the bridge gains eyes: `see()` forwards the door's own
+`/see` verb, which captures the live frame to a PNG and answers a path. The
+pixels never cross the wire.
+
+```js
+const bridge = buildBridge(snapshot, {
+  send: (verb, args) => door.call(verb, args),
+  see:  (verb, args) => door.call(verb, args),   // door /see -> { path, bytes, width, height }
+})
+await bridge.see({ label: 'world' })
+// { ok: true, path: '/abs/captures/agent/see_world_001.png', width: 1280, height: 720 }
+agent.toolCatalog(bridge)   // includes the `see` tool
+```
+
+Omit `see` and the surface is honestly blind (`{ ok:false, reason:'this surface
+has no eyes' }`), advertising no `see` tool - the door only has eyes when the
+game is actually rendering.
+
 ## vant - the brain (a client)
 
 [Vant](https://github.com/dhaupin/vant) is an agent brain. Its adapter is the
 **client** half: it drives any gamestruct door - an in-process `Bridge`, or a
-remote HTTP/MCP endpoint - through the four primitives.
+remote HTTP/MCP endpoint - through the four primitives (and the eyes).
 
 ```js
 import { DoorClient, pursueOne } from 'gamestruct/adapters/vant'
@@ -53,6 +73,7 @@ const client = new DoorClient({ url: 'https://door.example', token: '...' })
 await client.observe()
 await client.find({ role: 'button', name: 'start' })   // locate a handle
 await client.act('ui:start')
+await client.see({ label: 'look' })                    // the eyes (GET /see)
 
 // play with no objective: ONE want, ONE act, the SAME lane
 await pursueOne(client)
@@ -60,7 +81,8 @@ await pursueOne(client)
 
 A brain never learns whether the world is local or remote. `pursueOne` is the
 "leisure" move: pick an affordance and do it once - the lane used without a
-goal, never a second protocol.
+goal, never a second protocol. `see()` is the brain's sight: it returns a
+descriptor the brain reads with its own vision.
 
 ## webform - the surface that is not a game (the generality receipt)
 

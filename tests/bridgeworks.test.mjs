@@ -96,9 +96,9 @@ test('agent lane: tool name slugs a handle', () => {
     assert.equal(agent.toolName('ui:start'), 'act__ui__start');
 });
 
-test('agent lane: toolCall routes back to act()', () => {
+test('agent lane: toolCall routes back to act()', async () => {
     const b = demo();
-    const res = agent.toolCall(b, 'act__ui__mute', {});
+    const res = await agent.toolCall(b, 'act__ui__mute', {});
     assert.equal(res.ok, true);
     assert.equal(res.id, 'ui:mute');
 });
@@ -181,20 +181,99 @@ test('http binding: 404 on an unknown route', async () => {
     assert.equal((await handle({ method: 'GET', url: '/nope' })).status, 404);
 });
 
-test('mcp binding: initialize/tools-list/tools-call', () => {
+test('mcp binding: initialize/tools-list/tools-call', async () => {
     const handle = bindings.mcp.createHandler(demo());
-    const init = handle({ id: 1, method: 'initialize' });
+    const init = await handle({ id: 1, method: 'initialize' });
     assert.ok(init.result.serverInfo.name.includes('demo'));
-    const list = handle({ id: 2, method: 'tools/list' });
+    const list = await handle({ id: 2, method: 'tools/list' });
     const start = list.result.tools.find((t) => t._handle === 'ui:start');
-    const call = handle({ id: 3, method: 'tools/call', params: { name: start.name, arguments: { verb: 'activate' } } });
+    const call = await handle({ id: 3, method: 'tools/call', params: { name: start.name, arguments: { verb: 'activate' } } });
     assert.equal(call.result.isError, false);
 });
 
-test('mcp binding: an unknown method is a JSON-RPC error', () => {
+test('mcp binding: an unknown method is a JSON-RPC error', async () => {
     const handle = bindings.mcp.createHandler(demo());
-    const res = handle({ id: 9, method: 'nope' });
+    const res = await handle({ id: 9, method: 'nope' });
     assert.equal(res.error.code, -32601);
+});
+
+// --- the eyes: the optional fifth primitive ------------------------------
+
+test('eyes: a blind surface refuses see() honestly, and advertises no see tool', async () => {
+    const b = demo();
+    assert.equal(b.canSee, false);
+    const res = await b.see();
+    assert.equal(res.ok, false);
+    assert.match(res.reason, /no eyes/);
+    assert.ok(!agent.toolCatalog(b).some((t) => t.name === 'see'));
+});
+
+test('eyes: a sighted surface answers see() and advertises the see tool', async () => {
+    const b = demo();
+    b.onSee((opts) => ({ path: '/tmp/eyes-' + (opts.label || 'x') + '.png', bytes: 4096, width: 640, height: 360 }));
+    assert.equal(b.canSee, true);
+    const tool = agent.toolCatalog(b).find((t) => t.name === 'see');
+    assert.ok(tool, 'the see tool is advertised once a capture fn is registered');
+    assert.equal(tool._handle, 'surface:eyes');
+    const res = await b.see({ label: 'boot' });
+    assert.equal(res.ok, true);
+    assert.equal(res.path, '/tmp/eyes-boot.png');
+    assert.equal(res.mime, 'image/png');
+    // Seeing lands on the ring, so both lanes read it (not a silent side effect).
+    assert.ok(b.events(-1).events.some((e) => e.detail && e.detail.field === 'see'));
+});
+
+test('eyes: a capture that names no image is an honest failure', async () => {
+    const b = demo();
+    b.onSee(() => ({ bytes: 4096 }));   // no path, no url
+    const res = await b.see();
+    assert.equal(res.ok, false);
+    assert.match(res.reason, /no image/);
+});
+
+test('eyes: a capture that throws is an honest failure, never a crash', async () => {
+    const b = demo();
+    b.onSee(() => { throw new Error('no framebuffer'); });
+    const res = await b.see();
+    assert.equal(res.ok, false);
+    assert.match(res.reason, /no framebuffer/);
+});
+
+test('eyes: an explicitly-refused capture passes through untouched', async () => {
+    const b = demo();
+    b.onSee(() => ({ ok: false, reason: 'blank frame' }));
+    const res = await b.see();
+    assert.equal(res.ok, false);
+    assert.equal(res.reason, 'blank frame');
+});
+
+test('eyes: HTTP /see serves a capture, 404s a blind surface', async () => {
+    const blind = bindings.http.createHandler(demo());
+    assert.equal((await blind({ method: 'GET', url: '/see' })).status, 404);
+    const sighted = demo();
+    sighted.onSee(() => ({ path: '/tmp/wire.png', bytes: 2048 }));
+    const handle = bindings.http.createHandler(sighted);
+    const res = await handle({ method: 'POST', url: '/see', body: { label: 'wire' } });
+    assert.equal(res.status, 200);
+    assert.equal(res.body.path, '/tmp/wire.png');
+});
+
+test('eyes: MCP tools/call "see" and the direct "see" method both capture', async () => {
+    const b = demo();
+    b.onSee((opts) => ({ path: '/tmp/mcp-' + (opts.label || 'x') + '.png', bytes: 2048 }));
+    const handle = bindings.mcp.createHandler(b);
+    const viaTool = await handle({ id: 1, method: 'tools/call', params: { name: 'see', arguments: { label: 'a' } } });
+    assert.equal(viaTool.result.isError, false);
+    assert.equal(JSON.parse(viaTool.result.content[0].text).path, '/tmp/mcp-a.png');
+    const direct = await handle({ id: 2, method: 'see', params: { label: 'b' } });
+    assert.equal(direct.result.path, '/tmp/mcp-b.png');
+});
+
+test('eyes: MCP "see" on a blind surface is a JSON-RPC error, not a fake image', async () => {
+    const handle = bindings.mcp.createHandler(demo());
+    const res = await handle({ id: 1, method: 'see' });
+    assert.ok(res.error, 'a blind surface returned an error');
+    assert.match(res.error.message, /no eyes/);
 });
 
 // A real Synmergia door `observe()` snapshot (the exact shape
@@ -282,6 +361,31 @@ test('synmergia adapter: a partial (out-of-world) snapshot still renders', () =>
     assert.ok(b.tree.has('world:log'));
 });
 
+test('synmergia adapter: without a see sender the surface is honestly blind', async () => {
+    const b = buildSynmergia(doorSnapshot());
+    assert.equal(b.canSee, false);
+    const res = await b.see();
+    assert.equal(res.ok, false);
+    assert.match(res.reason, /no eyes/);
+});
+
+test('synmergia adapter: a see sender gives the bridge eyes (forwards the door verb)', async () => {
+    const calls = [];
+    const b = buildSynmergia(doorSnapshot(), {
+        see: async (verb, args) => {
+            calls.push([verb, args]);
+            return { ok: true, path: '/tmp/syn-see.png', url: 'file:///tmp/syn-see.png', bytes: 352000, width: 1280, height: 720 };
+        },
+    });
+    assert.equal(b.canSee, true);
+    assert.ok(agent.toolCatalog(b).some((t) => t.name === 'see'), 'the see tool is advertised');
+    const res = await b.see({ label: 'world' });
+    assert.equal(res.ok, true);
+    assert.equal(res.path, '/tmp/syn-see.png');
+    assert.equal(res.width, 1280);
+    assert.deepEqual(calls[0], ['see', { label: 'world' }]);
+});
+
 test('vant adapter: DoorClient drives an in-process bridge', async () => {
     const b = demo();
     const client = new DoorClient({ bridge: b });
@@ -298,6 +402,22 @@ test('vant adapter: DoorClient catalog over a bridge', async () => {
     const cat = await client.catalog();
     assert.equal(cat.ok, true);
     assert.equal(cat.tools.length, 3);
+});
+
+test('vant adapter: DoorClient.see over an in-process bridge forwards to the door', async () => {
+    const b = demo();
+    b.onSee((opts) => ({ path: '/tmp/client-' + (opts.label || 'x') + '.png', bytes: 1024 }));
+    const client = new DoorClient({ bridge: b });
+    const res = await client.see({ label: 'look' });
+    assert.equal(res.ok, true);
+    assert.equal(res.path, '/tmp/client-look.png');
+});
+
+test('vant adapter: DoorClient.see on a blind bridge refuses honestly', async () => {
+    const client = new DoorClient({ bridge: demo() });
+    const res = await client.see();
+    assert.equal(res.ok, false);
+    assert.match(res.reason, /no eyes/);
 });
 
 test('vant adapter: pursueOne does exactly one act', async () => {

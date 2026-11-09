@@ -33,6 +33,26 @@ agent.toolCatalog(bridge)
 The `_handle` field is the stable handle the tool drives - the *same* handle
 the human lane walks. That identity is the whole point.
 
+## the see tool (the eyes)
+
+When the surface can render pixels, the catalog also carries one synthetic tool
+that is not tied to a node - `see`. It captures a frame and returns a small
+descriptor (`{ ok, path, url, bytes, width, height }`); the brain reads the file
+with its own vision. A blind surface lists no `see` tool at all, so a brain
+never reaches for an eye that is not there.
+
+```js
+agent.toolCatalog(bridge).find((t) => t.name === 'see')
+// { name: 'see', description: 'Capture a visual frame of the surface (the eyes)...',
+//   inputSchema: { properties: { label: {type:'string'}, full: {type:'boolean'} } },
+//   _handle: 'surface:eyes', _role: 'image', _actions: ['see'] }
+
+await agent.toolCall(bridge, 'see', { label: 'boot' })
+// { ok: true, path: '/captures/frame.png', width: 1280, height: 720 }
+```
+
+The loop it closes: `observe -> act -> see -> read -> act -> re-see`.
+
 ## affordances(bridge)
 
 The flat "you can X, Y, Z" list a brain reads before choosing an act.

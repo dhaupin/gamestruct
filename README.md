@@ -1,9 +1,9 @@
-# gamestruct 1.0.0
+# gamestruct 1.1.0
 
-**One semantic tree. Two lanes. Four primitives.** The same surface serves a
-human who uses a screen reader and a machine agent — because they need the
-same thing: named, role-tagged nodes with stable handles, a linear traversal,
-and an event stream.
+**One semantic tree. Two lanes. Four primitives — plus the eyes.** The same
+surface serves a human who uses a screen reader and a machine agent — because
+they need the same thing: named, role-tagged nodes with stable handles, a
+linear traversal, and an event stream.
 
 Born in games (the first consumer is the Synmergia MMO), but not a game
 contract: the reference adapters build the same tree from a plain HTML form
@@ -62,6 +62,25 @@ client). The library is ESM and has no build step.
 | `waitFor(predicate, timeoutMs)` | resolve when a condition holds, or time out honestly |
 | `events(sinceFrame)` | what changed while you were not looking |
 
+## The eyes (the optional fifth primitive)
+
+A surface that can render pixels can also be **seen**. Register a capture
+function and the bridge gains eyes: `see()` returns a small descriptor — a
+`path`/`url` to a PNG the agent reads with its OWN vision — never the pixel
+bytes. A surface with no renderer refuses honestly and advertises no `see`
+tool, so a brain never reaches for an eye that is not there.
+
+```js
+bridge.onSee(async () => ({ path: '/captures/frame.png', width: 1280, height: 720 }))
+bridge.canSee                        // true
+await bridge.see()                   // { ok: true, path: '/captures/frame.png', ... }
+agent.toolCatalog(bridge)            // now includes the `see` tool
+// HTTP: GET /see   MCP: { method: 'see' } or tools/call { name: 'see' }
+```
+
+This is the loop a game agent needs: `observe -> act -> see -> read -> act ->
+re-see`. The frame stays on the host; the wire stays small.
+
 ## The pieces
 
 | path | what it carries |
@@ -69,11 +88,11 @@ client). The library is ESM and has no build step.
 | `lib/roles.mjs` | the role + action vocabulary (ARIA-aligned) |
 | `lib/tree.mjs` | the semantic tree + stable handles |
 | `lib/events.mjs` | the bounded event ring (announce / change / focus) |
-| `lib/bridge.mjs` | the door: tree + ring + handlers, the four primitives |
+| `lib/bridge.mjs` | the door: tree + ring + handlers, the four primitives + the eyes (`see`) |
 | `lib/profiles/human.mjs` | the human lane: render, focus order, a11y dump, audit |
-| `lib/profiles/agent.mjs` | the agent lane: MCP tool catalog, affordances, dispatch |
-| `lib/bindings/http.mjs` | the HTTP door (observe/act/wait_for/events, fail-closed token) |
-| `lib/bindings/mcp.mjs` | the MCP door (JSON-RPC 2.0: initialize/tools/list/tools/call) |
+| `lib/profiles/agent.mjs` | the agent lane: MCP tool catalog, affordances, dispatch (+ the `see` tool) |
+| `lib/bindings/http.mjs` | the HTTP door (observe/act/wait_for/events/see, fail-closed token) |
+| `lib/bindings/mcp.mjs` | the MCP door (JSON-RPC 2.0: initialize/tools/list/tools/call/see) |
 | `lib/adapters/synmergia.mjs` | reference WORLD adapter (a game state -> a tree) |
 | `lib/adapters/vant.mjs` | reference BRAIN adapter (a client that drives any door) |
 | `lib/adapters/webform.mjs` | reference NON-GAME adapter (a plain form -> a tree; the generality receipt) |
@@ -126,8 +145,8 @@ door is primitive-transport:
 
 | owner | what it owns |
 |-------|--------------|
-| **gamestruct** | the primitives, the tree, the profiles, HTTP + MCP bindings, the adapters, the hosts |
-| **synmergia** | the world: the door (`/observe` `/act` `/wait_for` `/events` `/coord`), the seats, the sign-off gate |
+| **gamestruct** | the primitives, the tree, the profiles, HTTP + MCP bindings, the adapters, the hosts, the eyes (`see`) |
+| **synmergia** | the world: the door (`/observe` `/act` `/wait_for` `/events` `/see` `/coord`), the seats, the sign-off gate |
 | **vant** | the brain: the roster, work items, delegation, leisure — driving the door as a gamestruct client |
 
 A second world that speaks the four primitives works with a gamestruct client

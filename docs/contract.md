@@ -2,7 +2,7 @@
 permalink: contract/
 layout: default
 title: The contract
-description: The four primitives (observe, act, wait_for, events) and the node shape every gamestruct door exposes.
+description: The four primitives (observe, act, wait_for, events), the optional fifth (see, the eyes), and the node shape every gamestruct door exposes.
 nav_order: 2
 ---
 
@@ -17,6 +17,26 @@ operate the surface.
 | `act` | `(handle, verb?, value?) -> Result` | do one thing, by stable handle |
 | `wait_for` | `(predicate, timeoutMs) -> Outcome` | resolve when a condition holds, or time out honestly |
 | `events` | `(sinceFrame) -> { frame, events[] }` | what changed while you were not looking |
+
+A surface that can render pixels MAY add a fifth, **optional** primitive:
+
+| primitive | signature | meaning |
+|-----------|-----------|---------|
+| `see` | `(opts?) -> Capture` | a visual frame, for an agent's own vision |
+
+`see` returns a small descriptor (`{ ok, path?, url?, mime?, bytes?, width?,
+height? }`) - never the pixel bytes; the frame stays on the host and the agent
+reads the file itself. A surface with no renderer refuses `see` honestly
+(`{ ok: false, reason: 'this surface has no eyes' }`) and advertises no `see`
+tool. Register a capture function to give a bridge eyes:
+
+```js
+bridge.onSee(async () => ({ path: '/captures/frame.png', width: 1280, height: 720 }))
+bridge.canSee            // true
+await bridge.see()       // { ok: true, path: '/captures/frame.png', ... }
+```
+
+That is SPEC rules N22-N24 (the eyes, v1.1).
 
 ## Stable handles
 

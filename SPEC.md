@@ -12,7 +12,9 @@ code disagree, the code is the bug.
 package semver (the family rule: a spec revision freezes the contract, a
 package version moves with the code). v1 freezes rules N1-N21 against the
 implementation `lib/` ships. Additive rows arrive as v1.x; a rule that changes
-a conforming host's behavior is v2.
+a conforming host's behavior is v2. **v1.1** adds the OPTIONAL fifth primitive
+`see` (the eyes) as rules N22-N24 -- purely additive: a host that never
+registers a capture function stays v1-conformant and simply refuses `see`.
 
 ---
 
@@ -82,6 +84,33 @@ Rules:
 - **N4** — `events(sinceFrame)` MUST be an honest cursor: calling it twice with
   the same cursor returns the same events; the returned `frame` is monotonic.
 - **N5** — `observe` MUST include the current focus handle and a summary.
+
+### 3.1 The eyes (OPTIONAL, v1.1)
+
+A surface whose host can render pixels (a game viewport, a browser page, a
+canvas) MAY expose a fifth primitive:
+
+| Primitive | Signature | Meaning |
+|-----------|-----------|---------|
+| `see` | `(opts?) -> Capture` | a visual frame of the surface, for an agent's own vision |
+
+`Capture` is a small descriptor, never the pixel bytes:
+
+```
+{ ok, path?, url?, mime?, bytes?, width?, height?, ...meta }
+```
+
+- **N22 (honest blindness)** — a surface with no renderer MUST refuse `see`
+  with `{ ok:false, reason }` (never a fake or empty image), and MUST NOT
+  advertise a `see` tool in the agent lane. A surface that HAS eyes advertises
+  exactly one `see` tool.
+- **N23 (no pixels on the wire)** — `see` MUST return a locatable descriptor
+  (at least a `path` or a `url`); the frame bytes stay on the host. The agent
+  reads the file with its own vision. A capture that names neither is an
+  honest failure.
+- **N24 (seeing is an event)** — a successful `see` MUST record an event on the
+  ring, so the human lane's live region and the agent lane's cursor observe it
+  rather than it being a silent side effect.
 
 ## 4. Vocabulary (NORMATIVE)
 
@@ -182,6 +211,7 @@ A binding is transport only; it never invents state.
 | `/act` | POST `{id,verb?,value?}` | `act(...)` |
 | `/wait_for` | POST `{predicate,timeoutMs}` | `waitFor(...)` |
 | `/events?since=N` | GET | `events(N)` |
+| `/see?label=&full=` | GET or POST | `see(...)` (404 when the surface is blind) |
 | `/health` | GET | liveness |
 
 - **N16** — when a token is configured, every route except `/health` MUST be
@@ -189,11 +219,12 @@ A binding is transport only; it never invents state.
 
 ### 7.2 MCP (JSON-RPC 2.0)
 
-`initialize`, `tools/list`, `tools/call`, plus `observe`/`events` as direct
-methods. Protocol version `2024-11-05`.
+`initialize`, `tools/list`, `tools/call`, plus `observe`/`events`/`see` as
+direct methods. Protocol version `2024-11-05`.
 
 - **N17** — `tools/list` MUST carry each tool's `inputSchema` (so an MCP
-  client auto-wires with no bespoke code).
+  client auto-wires with no bespoke code). A surface with eyes MUST include the
+  `see` tool; a blind surface MUST NOT.
 - **N18** — an unknown method MUST return JSON-RPC error `-32601`.
 
 ## 8. Posture (NORMATIVE)
@@ -212,7 +243,9 @@ methods. Protocol version `2024-11-05`.
 A door is **gamestruct-conformant** when it passes, at minimum:
 
 - N1–N5 (primitives), N6–N9 (vocabulary), N10–N12 (human lane),
-  N13–N15 (agent lane), N16–N18 (bindings), N19–N21 (posture).
+  N13–N15 (agent lane), N16–N18 (bindings), N19–N21 (posture). The eyes
+  (N22–N24) are OPTIONAL: a blind door is conformant without them; a door that
+  claims eyes MUST satisfy all three.
 
 `gamestruct check` runs the reference battery; `gamestruct doctor` prints both
 lanes' output for a demo surface and runs the a11y audit.

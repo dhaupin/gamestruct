@@ -6,6 +6,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-04
+
+### Added
+
+- **The eyes: `see()`, the OPTIONAL fifth primitive (SPEC v1.1, N22-N24).**
+  A surface that can render pixels can now be *seen* by an agent. Register a
+  capture function (`bridge.onSee(fn)`) and the bridge gains eyes: `see()`
+  returns a small descriptor (`{ ok, path, url, mime, bytes, width, height }`)
+  - a `path`/`url` to a frame the agent reads with its OWN vision, never the
+  pixel bytes, so the wire stays small. A surface with no renderer refuses
+  honestly (`{ ok:false, reason:'this surface has no eyes' }`) and advertises
+  no `see` tool; a sighted surface advertises exactly one `see` tool and
+  records a ring event so both lanes observe the capture.
+  - **Bridge:** `onSee(fn)` / `canSee` / `see(opts)`.
+  - **HTTP binding:** `GET|POST /see` (`{label, full}`) -> `see(...)`; `404`
+    when the surface is blind.
+  - **MCP binding:** the `see` tool in `tools/list`, a direct `see` method, and
+    `tools/call { name: 'see' }`; the handler is now async (the eyes are).
+  - **agent lane:** `toolCatalog` appends the `see` tool when `bridge.canSee`;
+    `toolCall(bridge, 'see', ...)` dispatches onto `bridge.see()`.
+  - **synmergia adapter:** pass a `see` sender and the bridge forwards the
+    door's own `/see` verb; omit it and the world is honestly blind.
+  - **vant adapter:** `DoorClient.see(opts)` - the brain's sight, local or
+    remote.
+  - Ten new test legs + four new self-checks (blind refusal, sighted capture,
+    no-image refusal, throwing capture, HTTP 404/200, MCP tool + method, blind
+    MCP error, adapter + client forwarding).
+
 ### Fixed
 
 - **The Synmergia adapter wires `set_value`.** A settable control (text box,

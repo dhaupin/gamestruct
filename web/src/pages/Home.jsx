@@ -17,7 +17,7 @@ export default function Home() {
       <div className="wrap">
         <p className="eyebrow">{site.name} {site.badge}</p>
         <h1>
-          One semantic tree. <span className="accent">Two lanes.</span> Four primitives.
+          One semantic tree. <span className="accent">Two lanes.</span> Four primitives, plus the eyes.
         </h1>
         <p className="lede">
           A UI that is accessible to a person using a screen reader and a UI that

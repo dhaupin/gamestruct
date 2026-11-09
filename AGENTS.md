@@ -8,9 +8,9 @@ history goes in `labs/TASKS.md` (create it when the first session needs it).
 `gamestruct` is the **lane bridge**: one semantic tree that serves BOTH a
 human's assistive technology (screen reader, switch, voice, a terminal) and a
 machine agent (MCP client, brain). Four primitives
-(`observe`/`act`/`wait_for`/`events`), two lanes, one contract. Born in games
-(Synmergia is the first world); not a game contract - the `webform` and `dom`
-adapters prove it.
+(`observe`/`act`/`wait_for`/`events`) plus an OPTIONAL fifth (`see`, the eyes),
+two lanes, one contract. Born in games (Synmergia is the first world); not a
+game contract - the `webform` and `dom` adapters prove it.
 
 It is a **library + spec**, not a service. There is no build step; the
 package is plain ESM. Node >= 18.
@@ -22,11 +22,11 @@ bin/gamestruct.mjs        the CLI (check, doctor, tui, version, help)
 lib/roles.mjs             role + action vocabulary (ARIA-aligned)
 lib/tree.mjs              the semantic tree + stable handles
 lib/events.mjs            the bounded event ring
-lib/bridge.mjs            the door: tree + ring + handlers, four primitives
+lib/bridge.mjs            the door: tree + ring + handlers, four primitives + the eyes (see)
 lib/profiles/human.mjs    the human lane (render, a11yDump, audit)
-lib/profiles/agent.mjs    the agent lane (toolCatalog, affordances, toolCall)
-lib/bindings/http.mjs     the HTTP door
-lib/bindings/mcp.mjs      the MCP door (JSON-RPC 2.0)
+lib/profiles/agent.mjs    the agent lane (toolCatalog, affordances, toolCall, the see tool)
+lib/bindings/http.mjs     the HTTP door (incl. /see)
+lib/bindings/mcp.mjs      the MCP door (JSON-RPC 2.0; async, incl. see)
 lib/adapters/synmergia.mjs  reference WORLD adapter
 lib/adapters/vant.mjs       reference BRAIN adapter
 lib/adapters/webform.mjs    reference NON-GAME adapter (a plain form; the generality receipt)
@@ -44,7 +44,7 @@ scripts/ship-from-download.cjs  the phone publish lane (family-reusable)
 labs/battery.json         the committed self-check contract (gamestruct-battery@1)
 labs/TASKS.md             session log (operational history)
 web/scripts/build-status.mjs  the family-status@1 emitter (writes web/public/status.json)
-SPEC.md                   the normative contract (spec revision v1, rules N1..N21)
+SPEC.md                   the normative contract (spec revision v1.1, rules N1..N24; N22-N24 = the eyes)
 DEPLOY.md                 the release runbook (manual 0.9.x lane, the OIDC flip)
 site.config.js            the site identity (see below)
 ```

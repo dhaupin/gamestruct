@@ -2,15 +2,15 @@
 permalink: what/
 layout: default
 title: What gamestruct is
-description: One zero-dependency library, four primitives, two lanes, one tree. What ships in the box, and the smallest surface a door and a client share.
+description: One zero-dependency library, four primitives (plus the optional eyes), two lanes, one tree. What ships in the box, and the smallest surface a door and a client share.
 nav_order: 9
 ---
 
 # What gamestruct is
 
 gamestruct is a zero-dependency ESM library. It defines one contract - four
-primitives over one semantic tree - and ships reference renderings for both
-audiences plus two transport bindings.
+primitives over one semantic tree (plus an optional fifth: the eyes) - and ships
+reference renderings for both audiences plus two transport bindings.
 
 ## The four primitives
 
@@ -23,6 +23,17 @@ four can operate the surface.
 | `act` | `(handle, verb?, value?) -> Result` | do one thing, by stable handle |
 | `wait_for` | `(predicate, timeoutMs) -> Outcome` | resolve when a condition holds, or time out honestly |
 | `events` | `(sinceFrame) -> { frame, events[] }` | what changed while you were not looking |
+
+A surface that can render pixels MAY add a fifth, **optional** primitive:
+
+| primitive | signature | meaning |
+|-----------|-----------|---------|
+| `see` | `(opts?) -> Capture` | a visual frame, for an agent's own vision |
+
+`see` returns a small descriptor (`{ ok, path?, url?, mime?, bytes?, width?,
+height? }`) - never the pixel bytes; the frame stays on the host. A surface
+with no renderer refuses honestly and advertises no `see` tool. Register a
+capture function with `bridge.onSee(fn)` to give a bridge eyes (SPEC N22-N24).
 
 ## The two lanes
 
@@ -40,9 +51,9 @@ feature; they are two renderings of one description.
 A binding is **transport only**; it never invents state.
 
 - **HTTP** (`bindings/http`) - `/observe`, `/act`, `/wait_for`, `/events`,
-  `/health`. Fail-closed token auth.
+  `/see`, `/health`. Fail-closed token auth.
 - **MCP** (`bindings/mcp`) - JSON-RPC 2.0: `initialize`, `tools/list`,
-  `tools/call`, plus `observe`/`events` as direct methods.
+  `tools/call`, plus `observe`/`events`/`see` as direct methods.
 
 ## What ships in the box
 
@@ -51,7 +62,7 @@ A binding is **transport only**; it never invents state.
 | `lib/roles.mjs` | the ARIA-aligned role + action vocabulary |
 | `lib/tree.mjs` | the semantic tree, stable handles, traversal, lookup |
 | `lib/events.mjs` | the bounded event ring with an honest cursor |
-| `lib/bridge.mjs` | the door: tree + ring + handlers, the four primitives |
+| `lib/bridge.mjs` | the door: tree + ring + handlers, the four primitives + the eyes (`see`) |
 | `lib/profiles/human.mjs` | the human lane (render, a11yDump, audit) |
 | `lib/profiles/agent.mjs` | the agent lane (toolCatalog, affordances, toolCall) |
 | `lib/bindings/http.mjs` | the HTTP door |
