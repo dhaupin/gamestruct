@@ -218,6 +218,7 @@ function doorSnapshot() {
         actions: [
             { id: 'world:wolf_1', kind: 'entity', action: 'Attack Wolf', detail: '3m away, level 4', disabled: false },
             { id: 'ui:MainMenu/MenuButtons/StartButton', kind: 'button', action: 'Start game', detail: '', disabled: false },
+            { id: 'ui:Login/Center/Panel/Form/UsernameField', kind: 'lineedit', action: 'Username input field', detail: '', disabled: false, value: '' },
         ],
         events: [{ t: 100, frame: 42, event: 'damage_dealt', data: { a: 'wolf_1', c: 12 } }],
     };
@@ -249,6 +250,19 @@ test('synmergia adapter: act() forwards the door handle VERBATIM', async () => {
     assert.equal(sent.length, 2);
     assert.deepEqual(sent[0], ['act', { id: 'ui:MainMenu/MenuButtons/StartButton' }]);
     assert.deepEqual(sent[1], ['act', { id: 'world:wolf_1' }]);
+});
+
+test('synmergia adapter: a settable control advertises set_value and forwards it', async () => {
+    const sent = [];
+    const b = buildSynmergia(doorSnapshot(), {
+        send: async (verb, args) => { sent.push([verb, args]); return { ok: true }; },
+    });
+    const field = b.tree.get('ui:Login/Center/Panel/Form/UsernameField');
+    // The affordance mirrors the role: a textbox offers set_value, a button does not.
+    assert.deepEqual(field.actions, [ACTIONS.SET_VALUE]);
+    assert.deepEqual(b.tree.get('ui:MainMenu/MenuButtons/StartButton').actions, [ACTIONS.ACTIVATE]);
+    await b.act('ui:Login/Center/Panel/Form/UsernameField', ACTIONS.SET_VALUE, 'Ada');
+    assert.deepEqual(sent[0], ['act', { id: 'ui:Login/Center/Panel/Form/UsernameField', verb: 'set_value', value: 'Ada' }]);
 });
 
 test('synmergia adapter: a door event record becomes a readable line', () => {

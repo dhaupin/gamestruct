@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The Synmergia adapter wires `set_value`.** A settable control (text box,
+  slider, combo, checkbox, switch) now advertises `set_value` and its handler
+  forwards `{ id, verb: 'set_value', value }` to the door; everything else
+  keeps advertising `activate`. Before this, a text field advertised
+  `ACTIVATE`, so an agent driving a login form had no way to type -- the gap a
+  live play-test caught (the door could press buttons but not fill a field).
+  Companion door change: Synmergia's `A11yService` gained the value write and
+  the driver now branches on the wire verb.
+
 ## [1.0.0] - 2026-11-09
 
 ### Added
