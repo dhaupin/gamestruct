@@ -1,0 +1,27 @@
+{
+  "name": "gamestruct",
+  "version": "0.1.0",
+  "description": "The game-agent lane bridge: one contract any game can implement as a door and any brain can drive as a client.",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "SPEC.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "game",
+    "agent",
+    "mcp",
+    "bridge",
+    "spec",
+    "specification"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dhaupin/gamestruct.git"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
