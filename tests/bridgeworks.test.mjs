@@ -438,6 +438,45 @@ test('vant adapter: an unreachable door is reported, never thrown', async () => 
     assert.match(res.reason, /unreachable/);
 });
 
+test('agent lane: toolCatalog builds from a bare node list (the wire shape)', () => {
+    // Over the wire there is no bridge object -- only observe().nodes. The
+    // catalog must build from that snapshot, and a remote door carries eyes.
+    const nodes = agent.toolCatalog(demo()).map((t) => ({
+        id: t._handle, role: t._role, name: t.name, actions: t._actions, disabled: false,
+    })).filter((n) => !String(n.id).startsWith('surface:'));
+    const tools = agent.toolCatalog(nodes, { canSee: true });
+    assert.ok(tools.some((t) => t._handle === 'ui:start'));
+    assert.ok(tools.some((t) => t.name === 'see'), 'the remote catalog advertises the eyes');
+    assert.ok(!agent.toolCatalog(nodes).some((t) => t.name === 'see'), 'blind by default');
+});
+
+test('vant adapter: DoorClient.catalog over a remote door uses observe (not a dead route)', async () => {
+    // A tiny real HTTP server that serves the four primitives the way a
+    // gamestruct door does. catalog() must read observe().nodes, never POST
+    // a /mcp/exec the door never had.
+    const http = await import('node:http');
+    const bridge = demo();
+    const handle = bindings.http.createHandler(bridge);
+    const server = http.createServer(async (req, res) => {
+        let raw = '';
+        for await (const chunk of req) raw += chunk;
+        const parsed = await handle({ method: req.method, url: req.url, body: raw ? JSON.parse(raw) : undefined, headers: req.headers });
+        res.writeHead(parsed.status, { 'content-type': 'application/json' });
+        res.end(JSON.stringify(parsed.body));
+    });
+    await new Promise((r) => server.listen(0, '127.0.0.1', r));
+    const port = server.address().port;
+    try {
+        const client = new DoorClient({ url: 'http://127.0.0.1:' + port });
+        const cat = await client.catalog();
+        assert.equal(cat.ok, true);
+        assert.ok(cat.tools.some((t) => t._handle === 'ui:start'), 'catalog read the live tree');
+        assert.ok(cat.tools.some((t) => t.name === 'see'), 'a remote door advertises its eyes');
+    } finally {
+        await new Promise((r) => server.close(r));
+    }
+});
+
 // --- the generality receipt: a surface that is not a game ------------------
 
 test('webform adapter: a plain form builds the SAME tree both lanes read', () => {
