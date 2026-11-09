@@ -5,15 +5,22 @@ the npm registry. The model follows [poststruct](https://github.com/dhaupin/post
 and [packstruct](https://github.com/dhaupin/packstruct) exactly, which in turn
 follow [prestruct](https://github.com/dhaupin/prestruct):
 
-1. **0.9.x is manual.** While the major is 0.x, publishing is done by a human
-   with `npm publish`. CI blocks `workflow_dispatch`/`tag` publishing for 0.x
-   versions - `publish.yml` REFUSES 0.x versions. This is the proven
-   convention.
+1. **1.x is OIDC.** Publishing is driven by the release ladder in CI: push a
+   `vX.Y.Z` tag and `publish.yml` runs publish -> release -> verify with npm
+   Trusted Publishing (OIDC, no stored token, SLSA provenance). CI blocks
+   `workflow_dispatch`/`tag` publishing for 0.x versions - `publish.yml`
+   REFUSES 0.x versions. This is the proven convention.
 
-## Ladder to automated publishes
+> The OIDC lane is LIVE: 0.9.0 was the one-time manual bootstrap (see below),
+> and 1.0.0 + 1.1.0 both cut end-to-end through `publish.yml`.
 
-1. Bump `package.json` + `CHANGELOG.md` to 1.0.0 (Unreleased -> Dated).
-2. Run `npm test` + `npm run check` locally. Tag `v1.0.0` and push.
+## The release ladder
+
+1. Move the `CHANGELOG.md` `[Unreleased]` section to a dated `[X.Y.Z]`, then
+   bump `package.json` (`npm version minor|major`). `package.json` is the
+   single version truth.
+2. Run `npm test` + `npm run check` locally. Tag `vX.Y.Z` and push
+   (`git push --follow-tags`).
 3. `publish.yml` (`.github/workflows/publish.yml`) - the family release ladder
    (eyestruct@4e2b552), three jobs:
    - **publish** - the gate refuses 0.x and any tag that does not equal the
@@ -37,9 +44,9 @@ follow [prestruct](https://github.com/dhaupin/prestruct):
 
 The pack ladder also runs offline on every push (`tests/release-verify.test.cjs`).
 
-## The first publish (the 0.9.0 manual bootstrap)
+## The first publish (the 0.9.0 manual bootstrap - DONE, history)
 
-OIDC cannot create a brand-new package (npm/cli#8544), so the first cut is
+OIDC cannot create a brand-new package (npm/cli#8544), so the first cut was
 manual - one time, from anywhere with npm credentials:
 
 1. `npm run check`   - the gate (syntax + sync + the 17 self-checks).
@@ -48,7 +55,7 @@ manual - one time, from anywhere with npm credentials:
 4. npmjs.com -> gamestruct -> Settings -> **Trusted Publisher**: repo
    `dhaupin/gamestruct`, workflow `publish.yml`.
 5. From then on, the tag drives it: `npm version minor && git push --follow-tags`
-   (once the major is 1.x).
+   (the major is 1.x now, so this is the standing path).
 
 ### The phone lane
 

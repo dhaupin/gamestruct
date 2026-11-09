@@ -47,7 +47,7 @@ labs/playtest.mjs         the live play-test harness (a reference brain; drives 
 labs/TASKS.md             session log (operational history)
 web/scripts/build-status.mjs  the family-status@1 emitter (writes web/public/status.json)
 SPEC.md                   the normative contract (spec revision v1.1, rules N1..N24; N22-N24 = the eyes)
-DEPLOY.md                 the release runbook (manual 0.9.x lane, the OIDC flip)
+DEPLOY.md                 the release runbook (the OIDC release ladder; the 0.9.0 bootstrap + phone lane as history)
 site.config.js            the site identity (see below)
 ```
 
@@ -75,8 +75,9 @@ site.config.js            the site identity (see below)
    release is "move package.json + the CHANGELOG + the README H1";
    `tests/version-truth.mjs` refuses any surface that drifts. The spec revision
    (`SPEC.md` v1) is its own axis.
-8. **The release ladder is the family shape.** `1.0.0` is the first OIDC
-   (provenance) cut; `publish.yml` REFUSES 0.x. A tag drives
+8. **The release ladder is the family shape.** `1.0.0` was the first OIDC
+   (provenance) cut and the lane is LIVE (1.0.0 + 1.1.0 shipped through it);
+   `publish.yml` REFUSES 0.x. A tag drives
    publish -> release -> verify; the offline pack ladder
    (`tests/release-verify.test.cjs`) runs every push. See `DEPLOY.md`.
 

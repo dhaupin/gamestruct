@@ -38,15 +38,16 @@ name: publish
 # (tests/release-verify.test.cjs), so the contents assertions have a standing
 # CI receipt instead of living only on release days.
 #
-# DORMANT until the first manual publish: OIDC cannot create a brand-new
-# package (npm/cli#8544), so claim gamestruct once from a dev machine (the
-# phone lane: scripts/ship-from-download.cjs, DEPLOY.md "0.9.x is manual"):
+# LIVE: the OIDC lane is active. The one-time bootstrap is DONE - 0.9.0 was
+# claimed manually (OIDC cannot create a brand-new package, npm/cli#8544; the
+# phone lane: scripts/ship-from-download.cjs), the Trusted Publisher is set
+# (repo dhaupin/gamestruct, workflow publish.yml), and 1.0.0 + 1.1.0 both cut
+# end-to-end through this workflow with SLSA provenance. From here:
 #
-#   1. npm run check                       # the gate
-#   2. npm publish                         # one-time manual bootstrap (0.9.0)
-#   3. npmjs.com -> gamestruct -> Settings -> Trusted Publisher:
-#      repo dhaupin/gamestruct, workflow publish.yml
-#   4. from then on: npm version minor|major && git push --follow-tags
+#   1. npm version minor|major   # bumps package.json (the single version truth)
+#   2. git push --follow-tags    # the tag drives publish -> release -> verify
+#
+# (The 0.9.x manual lane in DEPLOY.md is history - every cut is OIDC now.)
 #
 # verify-only dispatch mode: no publish, no release minting - the verify job
 # re-runs the trust ladder against what is ALREADY published and released.
