@@ -33,7 +33,9 @@ tests/bridgeworks.test.mjs  the suite
 web/                      the landing (prestruct + Vite + React; gamestruct.creadev.org)
 docs/                     the Jekyll docs (rendered at docs.creadev.org/gamestruct)
 scripts/sync-site.mjs     generates docs/_config.yml + web public files from site.config.js
+labs/battery.json         the committed self-check contract (gamestruct-battery@1)
 labs/TASKS.md             session log (operational history)
+web/scripts/build-status.mjs  the family-status@1 emitter (writes web/public/status.json)
 SPEC.md                   the normative contract (N1..N21)
 site.config.js            the site identity (see below)
 ```
