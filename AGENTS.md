@@ -30,7 +30,10 @@ lib/adapters/vant.mjs       reference BRAIN adapter
 lib/selfcheck.mjs         the self-checks `gamestruct check` runs
 lib/index.mjs             the barrel
 tests/bridgeworks.test.mjs  the suite
+web/                      the landing (prestruct + Vite + React; gamestruct.creadev.org)
 docs/                     the Jekyll docs (rendered at docs.creadev.org/gamestruct)
+scripts/sync-site.mjs     generates docs/_config.yml + web public files from site.config.js
+labs/TASKS.md             session log (operational history)
 SPEC.md                   the normative contract (N1..N21)
 site.config.js            the site identity (see below)
 ```

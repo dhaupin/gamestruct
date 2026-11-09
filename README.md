@@ -5,7 +5,8 @@ human who uses a screen reader and a machine agent — because they need the
 same thing: named, role-tagged nodes with stable handles, a linear traversal,
 and an event stream.
 
-Read the contract: [`SPEC.md`](./SPEC.md). Docs: <https://docs.creadev.org/gamestruct>.
+Read the contract: [`SPEC.md`](./SPEC.md). Site: <https://gamestruct.creadev.org>.
+Docs: <https://docs.creadev.org/gamestruct>.
 
 ```js
 import { Bridge, ROLES, human, agent } from 'gamestruct'

@@ -28,9 +28,16 @@ adapters.
   lanes + the a11y audit on a demo surface).
 - **`tests/bridgeworks.test.mjs`** — 31 assertions over the tree, both lanes,
   both bindings, and the two adapters.
+- **`web/`** — the landing site (prestruct + Vite + React), driven by
+  `site.config.js`; prerendered, with sitemap + `llms.txt` and a clean SEO
+  audit.
 - **`docs/`** — the Jekyll docs rig (rendered at docs.creadev.org/gamestruct).
-- **CI** — `test.yml` (the battery) and `docs-deploy.yml` (thin caller of the
-  freestruct docs lane).
+- **`scripts/sync-site.mjs`** — generates `docs/_config.yml`,
+  `docs/freestruct.config.yml`, and the web public files (`robots.txt`,
+  `site.webmanifest`) from `site.config.js`; `--check` gates drift.
+- **CI** — `test.yml` (the battery + the web build + the Jekyll docs build),
+  `docs-deploy.yml` (thin caller of the freestruct docs lane), and
+  `staging-ff-sync.yml` (fast-forward staging to main after a promotion).
 
 ### The idea
 
