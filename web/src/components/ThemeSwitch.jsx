@@ -9,10 +9,10 @@
  * first paint; this component only flips it.
  */
 import { useEffect } from 'react'
-import { THEME_KEY, paperFor } from '../theme.js'
+import { THEME_KEY, DEFAULT_SCHEME, paperFor } from '../theme.js'
 
 function currentScheme() {
-  return document.documentElement.dataset.scheme || 'petrol'
+  return document.documentElement.dataset.scheme || DEFAULT_SCHEME
 }
 
 function setThemeColor(light) {

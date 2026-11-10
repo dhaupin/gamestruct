@@ -18,6 +18,10 @@ site_url: https://gamestruct.creadev.org
 docs_url: https://docs.creadev.org/gamestruct
 theme_key: site-theme
 scheme_key: site-paint-scheme
+# The shipped defaults (a first visit, nothing stored). The docs layout sets
+# these on <html> so the no-JS first paint is right; a stored choice overrides.
+default_theme: light
+default_scheme: jade
 
 markdown: kramdown
 highlighter: rouge

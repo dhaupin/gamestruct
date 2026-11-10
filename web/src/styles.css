@@ -276,10 +276,21 @@ html[data-theme="light"] .theme-switch .icon-moon { display: block; }
   border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
   background: var(--surface); padding: 44px 0; margin: 24px 0;
 }
+.band-kicker {
+  font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent); margin: 0 0 12px; font-weight: 600;
+}
 .band-line {
   font-size: clamp(18px, 2.6vw, 24px); line-height: 1.5; font-weight: 600;
   color: var(--ink); max-width: 820px; margin: 0;
 }
+/* The thesis band: a full-bleed pull-quote. The two load-bearing phrases
+   carry the accent, the rest stays ink - so the line reads as one designed
+   statement instead of a flat paragraph. (Only .hero .accent had a rule;
+   the band's spans were falling back to plain ink, which is why the whole
+   block read as an unstyled wall of bold text.) */
+.band.thesis .wrap { border-left: 3px solid var(--accent); padding-left: 24px; }
+.band-line .accent { color: var(--accent); }
 .band-cta { text-align: left; padding: 56px 0; }
 .band-cta h2 { font-size: clamp(22px, 3.4vw, 32px); margin: 0 0 8px; font-weight: 800; letter-spacing: -0.01em; }
 .band-cta .sub { color: var(--ink-soft); font-size: 16px; margin: 0 0 22px; max-width: 640px; }

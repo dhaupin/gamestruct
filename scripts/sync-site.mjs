@@ -40,6 +40,10 @@ site_url: ${site.url}
 docs_url: ${site.docs.url}
 theme_key: ${site.theme.themeKey}
 scheme_key: ${site.theme.schemeKey}
+# The shipped defaults (a first visit, nothing stored). The docs layout sets
+# these on <html> so the no-JS first paint is right; a stored choice overrides.
+default_theme: ${site.theme.defaultMode}
+default_scheme: ${site.theme.defaultScheme}
 
 markdown: kramdown
 highlighter: rouge

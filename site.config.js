@@ -42,8 +42,10 @@ export default {
   theme: {
     themeKey: 'site-theme',
     schemeKey: 'site-paint-scheme',
-    defaultMode: 'dark',
-    defaultScheme: 'petrol',
+    // The shipped default (a first visit, no stored preference): jade light.
+    // A visitor's stored choice always wins; these only set the first paint.
+    defaultMode: 'light',
+    defaultScheme: 'jade',
   },
 
   // --- nav vocabulary -----------------------------------------------------

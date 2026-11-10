@@ -17,7 +17,7 @@
 # freestruct's own adapted default.html @ 4e1facc, same-day fix.)
 ---
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="{{ site.default_theme }}" data-scheme="{{ site.default_scheme }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -222,16 +222,20 @@
         }
     </style>
     <script>
-        // Theme + paint-scheme bootstrap (before first paint): the default
-        // tokens are dark/petrol, so a persisted light theme and/or a persisted
-        // scheme need applying here. Keep the keys in sync with the toggle
-        // handlers below and with the landing shell (web/src/theme.js).
+        // Theme + paint-scheme bootstrap (before first paint). The shell ships
+        // the defaults as attributes on <html> (data-theme="light"
+        // data-scheme="jade"), so a first visit is correct with no script; this
+        // only OVERRIDES when a visitor stored a different choice. Keep the keys
+        // in sync with the toggle handlers below and with the landing shell
+        // (web/src/theme.js).
         try {
-            var s = localStorage.getItem('{{ site.scheme_key }}');
-            if (s && s !== 'petrol') document.documentElement.dataset.scheme = s;
-            if (localStorage.getItem('{{ site.theme_key }}') === 'light') {
-                document.documentElement.dataset.theme = 'light';
+            var storedScheme = localStorage.getItem('{{ site.scheme_key }}');
+            if (storedScheme) {
+                if (storedScheme === 'petrol') document.documentElement.removeAttribute('data-scheme');
+                else document.documentElement.dataset.scheme = storedScheme;
             }
+            var storedTheme = localStorage.getItem('{{ site.theme_key }}');
+            if (storedTheme) document.documentElement.dataset.theme = storedTheme === 'light' ? 'light' : 'dark';
         } catch (e) {}
     </script>
 </head>
@@ -324,9 +328,10 @@
         try { localStorage.setItem('{{ site.theme_key }}', next); } catch (e) {}
     });
 
-    // Paint-scheme picker (issue #20). Petrol is the default (no attribute).
+    // Paint-scheme picker (issue #20). The shipped default is jade (set on
+    // <html>); petrol clears the attribute and falls back to the base tokens.
     var schemeSwitch = document.getElementById('schemeSwitch');
-    schemeSwitch.value = document.documentElement.dataset.scheme || 'petrol';
+    schemeSwitch.value = document.documentElement.dataset.scheme || 'jade';
     schemeSwitch.addEventListener('change', function () {
         var el = document.documentElement;
         if (this.value === 'petrol') delete el.dataset.scheme;

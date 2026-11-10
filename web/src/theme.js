@@ -13,8 +13,15 @@ import site from './site.js'
 export const THEME_KEY = site.theme.themeKey
 export const SCHEME_KEY = site.theme.schemeKey
 
-// The shipped presets. Petrol is the default and carries no CSS block (it IS
-// the base tokens); a dau may set a free-text scheme and ship its own block.
+// The shipped defaults (a first visit, nothing stored): jade light. The
+// pre-paint bootstrap in index.html applies these; a visitor's stored choice
+// always wins. Keep these in sync with site.config.js `theme` and the
+// bootstrap's paper map.
+export const DEFAULT_SCHEME = site.theme.defaultScheme || 'petrol'
+export const DEFAULT_LIGHT = (site.theme.defaultMode || 'dark') === 'light'
+
+// The shipped presets. Petrol carries no CSS block (it IS the base tokens);
+// a dau may set a free-text scheme and ship its own block.
 export const SCHEMES = ['petrol', 'golden', 'jade']
 
 // Each scheme's paper value per half - the one place a scheme touches the

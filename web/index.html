@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light" data-scheme="jade">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -41,27 +41,35 @@
   <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
-  <meta name="theme-color" content="#0a1113" />
+  <meta name="theme-color" content="#f6f1e7" />
 
   <script>
-    // Theme + paint-scheme bootstrap: apply a persisted light theme and a
-    // persisted paint scheme before the stylesheet paints (the default tokens
-    // are dark/petrol). Non-critical: wrapped in try in case storage is
-    // unavailable (private mode). Keep the keys and the paper map in sync with
-    // src/theme.js, ThemeSwitch.jsx, and SchemeSwitch.jsx (the meta color
-    // depends on BOTH axes).
+    // Theme + paint-scheme bootstrap, before first paint. The shell already
+    // ships the defaults as attributes on <html> (data-theme="light"
+    // data-scheme="jade"), so a first visit and a no-JS visit are correct with
+    // no script at all; this only OVERRIDES when a visitor stored a different
+    // choice. Non-critical: wrapped in try in case storage is unavailable
+    // (private mode). Keep the keys and the paper map in sync with src/theme.js,
+    // ThemeSwitch.jsx, SchemeSwitch.jsx, and site.config.js `theme` (the meta
+    // color depends on BOTH axes).
     try {
       var paper = {
         petrol: { dark: '#0a1113', light: '#edf3f2' },
         golden: { dark: '#121011', light: '#f6f1e7' },
         jade:   { dark: '#121011', light: '#f6f1e7' }
       }
-      var scheme = localStorage.getItem('site-paint-scheme') || 'petrol'
-      if (paper[scheme] && scheme !== 'petrol') document.documentElement.dataset.scheme = scheme
-      var light = localStorage.getItem('site-theme') === 'light'
-      if (light) document.documentElement.dataset.theme = 'light'
-      var p = (paper[scheme] || paper.petrol)[light ? 'light' : 'dark']
-      document.currentScript.previousElementSibling.setAttribute('content', p)
+      var el = document.documentElement
+      var storedScheme = localStorage.getItem('site-paint-scheme')
+      if (storedScheme) {
+        if (storedScheme === 'petrol') delete el.dataset.scheme
+        else if (paper[storedScheme]) el.dataset.scheme = storedScheme
+      }
+      var storedTheme = localStorage.getItem('site-theme')
+      if (storedTheme) el.dataset.theme = storedTheme === 'light' ? 'light' : 'dark'
+      var scheme = el.dataset.scheme || 'petrol'
+      var light = el.dataset.theme === 'light'
+      var meta = document.querySelector('meta[name="theme-color"]')
+      if (meta) meta.setAttribute('content', (paper[scheme] || paper.petrol)[light ? 'light' : 'dark'])
     } catch (e) {}
   </script>
 

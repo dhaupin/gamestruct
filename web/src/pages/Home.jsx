@@ -108,8 +108,9 @@ export default function Home() {
       </section>
 
       {/* ---- the thesis band ------------------------------------------- */}
-      <section className="band">
+      <section className="band thesis">
         <div className="wrap">
+          <p className="band-kicker">The thesis</p>
           <p className="band-line">
             A screen reader, a switch, voice control, and a machine agent all
             fail on the <span className="accent">same</span> UI: buttons with no

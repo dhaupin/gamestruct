@@ -11,10 +11,10 @@
  * The select's own label syncs one frame late; the page palette never does.
  */
 import { useEffect, useState } from 'react'
-import { SCHEMES, SCHEME_KEY, paperFor } from '../theme.js'
+import { SCHEMES, SCHEME_KEY, DEFAULT_SCHEME, paperFor } from '../theme.js'
 
 function currentScheme() {
-  return document.documentElement.dataset.scheme || 'petrol'
+  return document.documentElement.dataset.scheme || DEFAULT_SCHEME
 }
 
 function applyScheme(name) {
@@ -28,7 +28,7 @@ function applyScheme(name) {
 }
 
 export default function SchemeSwitch() {
-  const [scheme, setScheme] = useState('petrol')
+  const [scheme, setScheme] = useState(DEFAULT_SCHEME)
 
   useEffect(() => { setScheme(currentScheme()) }, [])
 
