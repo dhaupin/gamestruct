@@ -275,3 +275,13 @@ Propagates the coreforge adopter-sweep fixes (dhaupin/coreforge#52).
 - **#35** - `test.yml` gains the arm-gated eyestruct row (pinned `eyestruct@1.1.0`, gated on `labs/.eyes/manifest.yml` existing) running the browserless, read-only `eyestruct gate`. Canon stays CI-cut; the battery only refuses drift. An unseeded repo stays parked instead of fake-red.
 - **#48 / #49 - already correct here.** The `.gitignore` docs block already carried `docs/.jekyll-cache/`, `docs/.jekyll-metadata`, `docs/pagefind/`, `docs/pagefind*`, and `docs-deploy.yml` already triggers on `site.config.js` + `scripts/sync-site.mjs`. No change needed.
 - **Receipt:** edited YAML parses. No version bump; v1.0.0 still held.
+
+---
+
+### 2026-11-03 - session: breadcrumbs on (engine + this site)
+
+Google Search Console showed the family's properties under a breadcrumbs enhancement with 0 results. Recon split the fleet: the docs sites run freestruct (auto BreadcrumbList since 1.1.0); the product sites run prestruct, whose `buildJsonLd()` is site-wide by contract and could never emit a per-route trail. prestruct gained engine-level `breadcrumb: true` (injectMeta already owns the route path); this repo turned the discovery surface on.
+
+- `scripts/sync-site.mjs` renders `breadcrumb: true` into `docs/freestruct.config.yml` (regenerated, sync:check PASS); `web/ssr.config.js` - `breadcrumb: true`.
+- Receipts: docs config validates against the pinned engine; docs sync:check PASS where generated; prestruct's own `example/` build proves emission (BreadcrumbList on a sub-route, none on `/`).
+- No version bump; a discovery-surface opt-in.
