@@ -24,6 +24,7 @@ Source of truth (link-not-copy): https://github.com/dhaupin/crashtest/blob/main/
 | Post | Version | Status |
 |------|---------|--------|
 | `announcing-v1.0.0.md` | 1.0.0 | 2026-11-09 on npm |
-| `announcing-v1.1.0.md` | 1.1.0 | staged for the v1.1.0 tag |
+| `announcing-v1.1.0.md` | 1.1.0 | 2026-11-09 on npm |
+| `announcing-v1.1.1.md` | 1.1.1 | staged for the v1.1.1 tag |
 
 To publish one: open the file, copy the raw markdown (GitHub: **Raw**), strip the frontmatter block at the top, and paste it into a GitHub Discussions announcement for that version.

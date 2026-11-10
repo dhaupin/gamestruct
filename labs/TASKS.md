@@ -3,6 +3,41 @@
 Operational history. Stable conventions live in `AGENTS.md`; the normative
 contract lives in `SPEC.md`.
 
+## 2026-11-10 - the 1.1.1 cut (the release ladder, continued)
+
+Session context: 1.1.0 shipped end-to-end through the OIDC ladder, but one
+commit sat unpushed on `staging` (the status-page check-count fix, still filed
+under `[Unreleased]`). Continue the ladder: cut the patch.
+
+Shipped:
+
+- **The 1.1.1 cut**: `CHANGELOG.md` `[Unreleased]` -> a dated `[1.1.1]`
+  (2026-11-10) with a fresh empty `[Unreleased]` above it; `package.json` +
+  `package-lock.json` bumped to 1.1.1 (`npm version patch`); the README H1
+  moved to `# gamestruct 1.1.1`. version-truth PASS.
+- **`docs/discussions/announcing-v1.1.1.md`**: the release post (one file per
+  release, the file IS the post; drafted against a shipped version only).
+- **`docs/discussions/index.md`**: the v1.1.0 row corrected from "staged for
+  the v1.1.0 tag" to "2026-11-09 on npm" (it shipped), and the v1.1.1 row
+  added.
+
+Verified this round:
+
+- `npm test` -> version-truth PASS, bridgeworks 64/0, release ladder 29/0.
+- `npm run check` -> 20 checks, all pass.
+- `npm run doctor` -> both lanes print, a11y audit clean.
+- The SERVED 1.1.0 re-verified through the post-publish ladder:
+  `verify-release --npm --version 1.1.0` VERIFIED (provenance present, served
+  tarball sha512 == registry integrity, 0 forbidden, 21 files), and
+  `verify-release --gh --tag v1.1.0 --asset gamestruct-1.1.0.tgz` VERIFIED
+  (release object exists, GH source tarball == git archive, asset sha512 ==
+  registry integrity).
+
+Still open (unchanged): the `wait_for` wire key -- the door tolerates both
+`timeoutMs` and `timeout_ms`, so the two agree in practice; the SPEC lists
+`timeoutMs` and the door's own comment says `timeout_ms`. Not worth a rename
+while the door accepts both.
+
 ## 2026-11-09 - the release-post convention, and the 1.1.0 cut
 
 Session context: the family convention (`docs/discussions/`, one
