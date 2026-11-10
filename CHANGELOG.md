@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### 2026-11-03 - breadcrumbs on (engine + this site)
+
+Google Search Console showed the family's properties under a breadcrumbs enhancement with 0 results. Recon split the fleet: the docs sites run freestruct (auto BreadcrumbList since 1.1.0); the product sites run prestruct, whose `buildJsonLd()` is site-wide by contract and could never emit a per-route trail. prestruct gained engine-level `breadcrumb: true` (injectMeta owns the route path), and this repo turned the discovery surface on in its configs.
+
+- `scripts/sync-site.mjs` renders `breadcrumb: true` into `docs/freestruct.config.yml`; regenerated, sync:check PASS.
+- `web/ssr.config.js` - `breadcrumb: true` (active once the prestruct engine feature ships).
+- Receipts: docs config validates against the pinned engine; docs sync:check PASS where generated.
+- No version bump; a discovery-surface opt-in.
+
+
 ## [1.2.1] - 2026-11-04
 
 ### Added
