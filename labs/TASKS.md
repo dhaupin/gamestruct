@@ -8,8 +8,8 @@ contract lives in `SPEC.md`.
 Session context: the owner asked for a real lander homepage on `/web` - "go
 wild", market it, show how to set it up, what it does, why it matters for
 players AND agents, why devs should adopt it, auto a11y - plus npm links in the
-web and docs menus. Also: scrub the stale "runners being reworked to parallel"
-notes (done, in both gamestruct and synmergia).
+web and docs menus. Also: scrub the stale runner note (the parallel runner
+has long been live; done, in both gamestruct and synmergia).
 
 Shipped:
 
