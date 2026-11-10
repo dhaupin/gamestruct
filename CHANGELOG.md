@@ -6,6 +6,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The battery carries the eyestruct arm (issue #35).** `test.yml` gains an ARM-GATED row (pinned `eyestruct@1.1.0`, gated on `labs/.eyes/manifest.yml` existing) that runs the browserless, read-only `eyestruct gate` (exit 1 on unexplained visual drift). Canon stays CI-cut (eyestruct's own ratify lane); this battery only refuses drift, and an unseeded repo stays parked instead of fake-red.
+
 ### Fixed
 
 - **Status-page check count.** `docs/status.md` and `web/src/pages/Status.jsx`
