@@ -6,6 +6,31 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-11-04
+
+### Added
+
+- **The landing is a real lander now (marketing homepage).** `web/src/pages/Home.jsx`
+  grew from a hero into the full pitch: a thesis band ("one missing
+  description"), *who it is for* (players who use assistive tech, agents,
+  game devs, studios), *why it is needed* (the human/agent/both failure table),
+  *what you get* (the four primitives + the eyes, both lanes, the bindings),
+  *how it works* (the four-step adoption path), *auto a11y*, *why devs adopt it*
+  (six cards), and the ecosystem proof (synmergia/vant/webform+dom), closing on
+  a CTA band. New `.band` / `.chips` / `.section-title` styles ride the existing
+  tokens (no hardcoded hex), so both themes and all three paint schemes carry it.
+- **npm + docs links in the menus.** `site.config.js` nav gains `Docs` and
+  `npm` (the header, sidebar, and footer all render the one vocabulary), and the
+  docs rig gains an npm row in `docs/_data/nav.yml` plus an npm icon in the docs
+  header beside GitHub.
+
+### Changed
+
+- **The landing route meta** (`site.config.js`) reads for the pitch
+  ("one tree, two lanes, every player and agent") instead of the spec summary.
+- **Stale runner note scrubbed.** `labs/TASKS.md` no longer says the family
+  runners are "being reworked" - the parallel runner has long been live.
+
 ## [1.2.0] - 2026-11-10
 
 ### Added

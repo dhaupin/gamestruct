@@ -104,6 +104,20 @@ byline. It flows from `site.config.js` into the web footer
 footer. All three footers carry a live **https://creadev.org** backlink - keep
 it, the backlink is how the family grows.
 
+The nav vocabulary lives ONCE in `site.config.js` `nav` (the header, the
+sidebar, and the footer all render it), and it carries the external surfaces:
+**Docs** (`site.docs.url`), **npm** (`https://www.npmjs.com/package/gamestruct`),
+and **GitHub**. The docs rig mirrors the same links: an npm row in
+`docs/_data/nav.yml` (Surfaces group) and an npm icon in the docs header
+(`docs/_layouts/default.html`) beside the GitHub icon. Keep npm in both menus -
+it is the install surface, and the landing hero CTA points at it too.
+
+The landing homepage (`web/src/pages/Home.jsx`) is the marketing lander, not
+just a hero: thesis band, who-it-is-for, why-it-is-needed, what-you-get,
+how-it-works, auto-a11y, why-devs-adopt, and the ecosystem proof. It sells to
+four readers at once (player, agent engineer, game dev, studio) and every claim
+links to a receipt (docs, the repo, or the status page).
+
 ## Branches
 
 - `main` — the published line.

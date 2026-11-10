@@ -40,6 +40,8 @@
   items:
   - title: Landing site
     url: https://gamestruct.creadev.org/
+  - title: npm package
+    url: https://www.npmjs.com/package/gamestruct
   - title: GitHub repo
     url: https://github.com/dhaupin/gamestruct
   - title: SPEC.md source

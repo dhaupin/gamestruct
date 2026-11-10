@@ -54,6 +54,8 @@ export default {
     { label: 'What', to: '/what', group: 'site' },
     { label: 'About', to: '/about', group: 'site', header: false },
     { label: 'Status', to: '/status', group: 'site' },
+    { label: 'Docs', href: 'https://docs.creadev.org/gamestruct/', group: 'out' },
+    { label: 'npm', href: 'https://www.npmjs.com/package/gamestruct', group: 'out' },
     { label: 'GitHub', href: 'https://github.com/dhaupin/gamestruct', group: 'out' },
   ],
   footerExtras: [
@@ -68,9 +70,9 @@ export default {
       priority: '1.0',
       changefreq: 'monthly',
       meta: {
-        title: 'gamestruct - the lane bridge',
+        title: 'gamestruct - one tree, two lanes, every player and agent',
         description:
-          'One semantic tree, two lanes, four primitives: accessibility for people and for agents, from one contract. Born in games; any surface with a door qualifies.',
+          'Accessibility for people and for agents, from one contract. Auto a11y and an MCP agent surface fall out of one semantic tree - zero dependencies, MIT, born in games.',
       },
     },
     {

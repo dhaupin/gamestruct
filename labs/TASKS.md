@@ -3,6 +3,37 @@
 Operational history. Stable conventions live in `AGENTS.md`; the normative
 contract lives in `SPEC.md`.
 
+## 2026-11-04 - the marketing lander + npm in the menus (1.2.1 cut)
+
+Session context: the owner asked for a real lander homepage on `/web` - "go
+wild", market it, show how to set it up, what it does, why it matters for
+players AND agents, why devs should adopt it, auto a11y - plus npm links in the
+web and docs menus. Also: scrub the stale "runners being reworked to parallel"
+notes (done, in both gamestruct and synmergia).
+
+Shipped:
+
+- **The lander** (`web/src/pages/Home.jsx`): a hero ("One tree. Two lanes.
+  Every player, every agent.") over a thesis band, *who it is for* (4 cards:
+  players who use assistive tech, agents, game devs, studios), *why it is
+  needed* (a 3-row failure table: human lane / agent lane / both), *what you
+  get* (the four primitives + the eyes, both lanes, the bindings), *how it
+  works* (a 4-step adoption path + a full code block), *auto a11y*, *why devs
+  adopt it* (6 cards), and the ecosystem proof (synmergia/vant/webform+dom),
+  closing on a CTA band. New `.band` / `.chips` / `.section-title` styles ride
+  the existing tokens (no hardcoded hex), so both themes and all three paint
+  schemes carry it.
+- **npm + docs in the menus**: `site.config.js` nav gains `Docs` + `npm` (the
+  header/sidebar/footer all render the one vocabulary); `docs/_data/nav.yml`
+  gains an npm row in Surfaces; `docs/_layouts/default.html` gains an npm icon
+  beside GitHub. The landing route meta now reads for the pitch.
+- **The 1.2.1 cut**: CHANGELOG `[Unreleased]` -> `[1.2.1]`, `npm version
+  patch`, README H1 -> `# gamestruct 1.2.1`, `docs/discussions/announcing-v1.2.1.md`
+  + the index row.
+
+Gates: `npm test` 67/0 + 29/0, `npm run check` 20 checks OK, `web build` 8/8
+pages + SEO audit clean.
+
 ## 2026-11-10 - issue #1: the client transport wall (SPEC v1.2), and the 1.2.0 cut
 
 Session context: gamestruct's one open issue (#1, filed by the vant lane) asked
@@ -217,8 +248,7 @@ Shipped:
   docs build on PR), `docs-deploy.yml` (thin caller of the freestruct docs
   lane), `staging-ff-sync.yml` (FF staging to main after a promotion).
 
-Verified this round (no full parallel runner yet - the family runners are
-being reworked):
+Verified this round:
 
 - `npm test` -> 31 pass / 0 fail.
 - `npm run check` -> 17 self-checks, all pass; `node --check` clean on every
