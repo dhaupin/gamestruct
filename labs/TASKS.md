@@ -3,6 +3,45 @@
 Operational history. Stable conventions live in `AGENTS.md`; the normative
 contract lives in `SPEC.md`.
 
+## 2026-11-10 - issue #1: the client transport wall (SPEC v1.2), and the 1.2.0 cut
+
+Session context: gamestruct's one open issue (#1, filed by the vant lane) asked
+the reference `DoorClient` to become wall-injectable and to read a 409/408
+refusal body verbatim. Close it, bump the SPEC revision, and cut 1.2.0.
+
+Shipped:
+
+- **`lib/adapters/vant.mjs`**: `DoorClient` takes an injected `fetch`
+  (`target.fetch`), defaulting to the global `fetch`; every remote call in
+  `_fetch` rides `this._fetchImpl`. A host (vant, a browser app, a Worker) can
+  now interpose its own wall (SSRF/DNS-rebinding refusal, circuit breaker)
+  without forking the reference. Zero deps preserved.
+- **The refusal-as-data rule** (already the behavior via the `parsed.ok ===
+  undefined` guard) is now pinned by tests: a 409 (refused `act`) and a 408
+  (honest `wait_for` timeout) return the door's own `reason` verbatim.
+- **`SPEC.md` v1.2** (revision history updated): N25 (transport wall) + N26
+  (refusal as data = N21 carried across the wire), both binding the reference
+  CLIENT, not a door; conformance section notes they are OPTIONAL for a door.
+- **Three new battery legs** (`tests/bridgeworks.test.mjs`, 64 -> 67): the
+  injected fetch is the one called (global untouched); a 409 body verbatim; a
+  408 body verbatim.
+- **Docs**: `docs/adapters.md` (the injectable transport), `AGENTS.md` (SPEC
+  revision line), a CHANGELOG entry, and the release post
+  `docs/discussions/announcing-v1.2.0.md` + its index row.
+
+Verified this round:
+
+- `npm test` -> version-truth PASS, bridgeworks 67/0, release ladder 29/0.
+- `npm run check` -> 20 checks, all pass.
+- 1.1.1 was cut earlier this session (the status-page check-count fix + the
+  eyestruct arm) and shipped through the OIDC ladder (publish -> release ->
+  verify all green; npm latest 1.1.1, provenance present); both served ladders
+  re-verified VERIFIED.
+
+Still open (unchanged): the `wait_for` wire key -- the door tolerates both
+`timeoutMs` and `timeout_ms`; the SPEC lists `timeoutMs`. Not worth a rename
+while the door accepts both.
+
 ## 2026-11-10 - the 1.1.1 cut (the release ladder, continued)
 
 Session context: 1.1.0 shipped end-to-end through the OIDC ladder, but one

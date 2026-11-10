@@ -84,6 +84,17 @@ A brain never learns whether the world is local or remote. `pursueOne` is the
 goal, never a second protocol. `see()` is the brain's sight: it returns a
 descriptor the brain reads with its own vision.
 
+Remote calls ride an **injectable transport** (SPEC N25): pass `fetch` to route
+every request through your own wall (SSRF/DNS-rebinding refusal, circuit
+breaker). The default is the global `fetch`, so the reference stays usable
+standalone. A refusal body (`{ ok:false, reason }`, HTTP `409`/`408`) crosses
+the wire as DATA (N26) - the door's own reason comes back verbatim, never
+collapsed into a generic `http <status>`.
+
+```js
+const client = new DoorClient({ url, fetch: myWalledFetch })
+```
+
 A WORLD door serves its own snapshot (`observe()` is a live world: `player`,
 `actions[]`, `events[]`), not a serialized tree. Give the client a `mapNodes`
 normalizer and `catalog()` folds that wire shape into the SPEC node shape:

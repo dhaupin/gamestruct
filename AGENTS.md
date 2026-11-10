@@ -46,7 +46,7 @@ labs/battery.json         the committed self-check contract (gamestruct-battery@
 labs/playtest.mjs         the live play-test harness (a reference brain; drives a running door through all five primitives incl. see)
 labs/TASKS.md             session log (operational history)
 web/scripts/build-status.mjs  the family-status@1 emitter (writes web/public/status.json)
-SPEC.md                   the normative contract (spec revision v1.1, rules N1..N24; N22-N24 = the eyes)
+SPEC.md                   the normative contract (spec revision v1.2, rules N1..N26; N22-N24 = the eyes, N25-N26 = the client transport)
 DEPLOY.md                 the release runbook (the OIDC release ladder; the 0.9.0 bootstrap + phone lane as history)
 site.config.js            the site identity (see below)
 ```

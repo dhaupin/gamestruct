@@ -6,6 +6,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-10
+
+### Added
+
+- **The reference client's transport is injectable (issue #1, SPEC v1.2,
+  N25–N26).** `DoorClient` accepts a `fetch` in its constructor and routes
+  every remote call through it (default: global `fetch`), so a brain can
+  interpose its own wall (SSRF/DNS-rebinding refusal, circuit breaker, egress
+  policy) without forking the reference. SPEC v1.2 adds N25 (the transport
+  wall) and N26 (a refusal body crosses the wire as data — N21 carried across
+  the wire); the refusal-verbatim behavior was already correct and is now
+  pinned by tests. Three new battery legs (bridgeworks 64 -> 67).
+
 ## [1.1.1] - 2026-11-10
 
 ### Added

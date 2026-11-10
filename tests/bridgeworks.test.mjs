@@ -438,6 +438,43 @@ test('vant adapter: an unreachable door is reported, never thrown', async () => 
     assert.match(res.reason, /unreachable/);
 });
 
+test('vant adapter: DoorClient injects the fetch (the transport wall)', async () => {
+    // A door URL is an operator-supplied address; a brain must be able to
+    // route every call through its OWN walled fetch. Inject one and prove it
+    // is the one called -- global fetch is never touched.
+    const calls = [];
+    const wall = async (url, opts) => {
+        calls.push({ url, method: opts.method });
+        return { ok: true, status: 200, json: async () => ({ ok: true, nodes: [], frame: 0 }) };
+    };
+    const client = new DoorClient({ url: 'http://door.example', token: 't', fetch: wall });
+    const res = await client.observe();
+    assert.equal(res.ok, true);
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].url, 'http://door.example/observe');
+    assert.equal(calls[0].method, 'GET');
+});
+
+test('vant adapter: a 409 refusal body is returned verbatim (the door reason, not "http 409")', async () => {
+    // N2/N21: the binding carries a refusal as HTTP 409 with a { ok:false,
+    // reason } body. The client must read that body as DATA, never collapse it
+    // to a generic http status -- the door's own reason is the value.
+    const wall = async () => ({ ok: false, status: 409, json: async () => ({ ok: false, reason: 'no such handle: ui:nope' }) });
+    const client = new DoorClient({ url: 'http://door.example', fetch: wall });
+    const res = await client.act('ui:nope', 'activate');
+    assert.equal(res.ok, false);
+    assert.equal(res.reason, 'no such handle: ui:nope');
+});
+
+test('vant adapter: a 408 honest timeout body is returned verbatim', async () => {
+    // N3: a wait_for that times out is HTTP 408 with { ok:false, reason:'timeout' }.
+    const wall = async () => ({ ok: false, status: 408, json: async () => ({ ok: false, reason: 'timeout' }) });
+    const client = new DoorClient({ url: 'http://door.example', fetch: wall });
+    const res = await client.waitFor({ any: true }, 10);
+    assert.equal(res.ok, false);
+    assert.equal(res.reason, 'timeout');
+});
+
 test('agent lane: toolCatalog builds from a bare node list (the wire shape)', () => {
     // Over the wire there is no bridge object -- only observe().nodes. The
     // catalog must build from that snapshot, and a remote door carries eyes.

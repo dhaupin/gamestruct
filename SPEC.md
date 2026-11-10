@@ -15,6 +15,9 @@ implementation `lib/` ships. Additive rows arrive as v1.x; a rule that changes
 a conforming host's behavior is v2. **v1.1** adds the OPTIONAL fifth primitive
 `see` (the eyes) as rules N22-N24 -- purely additive: a host that never
 registers a capture function stays v1-conformant and simply refuses `see`.
+**v1.2** adds the client transport posture as rules N25-N26: the reference
+client's remote calls ride an injectable transport, and a refusal body crosses
+the wire as data (N21 applies end to end). Purely additive to a door.
 
 ---
 
@@ -238,6 +241,23 @@ direct methods. Protocol version `2024-11-05`.
 - **N21 (honesty)** — every refusal is a value (`{ ok:false, reason }`), never
   an exception thrown across the boundary and never a silent no-op.
 
+### 8.1 The client transport (NORMATIVE for the reference client)
+
+A remote door URL is an operator-supplied address. The reference client
+(`lib/adapters/vant.mjs`, `DoorClient`) MUST route every remote call through an
+injectable transport, so a host can interpose its own wall (SSRF/DNS-rebinding
+refusal, circuit breaker, egress policy) without forking the client.
+
+- **N25 (transport wall)** — the client MUST accept an injected fetch-shaped
+  transport (defaulting to the global `fetch`). Every remote request MUST ride
+  it. A host supplies its own; the default keeps the reference usable
+  standalone and dependency-free.
+- **N26 (refusal as data)** — when a response carries a gamestruct refusal
+  body (`{ ok:false, reason }`) under a refusal status (`409` for a refused
+  `act`, `408` for an honest `wait_for` timeout), the client MUST return that
+  body verbatim. It MUST NOT collapse the door's own `reason` into a generic
+  transport error. This is N21 carried across the wire.
+
 ## 9. Conformance
 
 A door is **gamestruct-conformant** when it passes, at minimum:
@@ -245,7 +265,8 @@ A door is **gamestruct-conformant** when it passes, at minimum:
 - N1–N5 (primitives), N6–N9 (vocabulary), N10–N12 (human lane),
   N13–N15 (agent lane), N16–N18 (bindings), N19–N21 (posture). The eyes
   (N22–N24) are OPTIONAL: a blind door is conformant without them; a door that
-  claims eyes MUST satisfy all three.
+  claims eyes MUST satisfy all three. The client transport rules (N25–N26)
+  bind the reference CLIENT, not a door; they are OPTIONAL for a door.
 
 `gamestruct check` runs the reference battery; `gamestruct doctor` prints both
 lanes' output for a demo surface and runs the a11y audit.
