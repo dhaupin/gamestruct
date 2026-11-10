@@ -31,7 +31,7 @@ it actually has:
 
 | leg | input | meaning |
 |-----|-------|---------|
-| `selfcheck` | the bridgeworks' own `runSelfChecks()` (the same 17 checks `gamestruct check` runs) | the tree, both lanes, both bindings, and the invariant that the SAME handle drives both |
+| `selfcheck` | the bridgeworks' own `runSelfChecks()` (the same checks `gamestruct check` runs) | the tree, both lanes, both bindings, and the invariant that the SAME handle drives both |
 | `battery` | `labs/battery.json`, the committed contract | the expected shape of the self-check battery - a check that silently disappears reads RED, never a smaller green |
 
 The emitter runs the self-checks at web-build time and reconciles the live count
