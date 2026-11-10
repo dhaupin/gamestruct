@@ -76,6 +76,11 @@ basePath: ${site.docs.baseurl}
 outputDir: _site
 linkCheck: true
 
+# Auto BreadcrumbList per page: a trail from the URL tree (site root -> path
+# segments -> the page title). The home page ships none. Carried since
+# freestruct 1.1.0, so every pinned version in the family has it.
+breadcrumb: true
+
 author:
   name: ${site.org.name}
   url: ${site.org.url}
