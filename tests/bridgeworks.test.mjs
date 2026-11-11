@@ -420,6 +420,26 @@ test('vant adapter: DoorClient.see on a blind bridge refuses honestly', async ()
     assert.match(res.reason, /no eyes/);
 });
 
+test('vant adapter: DoorClient carries a principal on the remote wire (multi-agent door)', async () => {
+    const calls = [];
+    const fakeFetch = async (url, options = {}) => {
+        calls.push({ url, method: options.method, body: options.body ? JSON.parse(options.body) : null });
+        return { ok: true, status: 200, json: async () => ({ ok: true, nodes: [] }) };
+    };
+    const client = new DoorClient({ url: 'http://127.0.0.1:3789', fetch: fakeFetch });
+    // observe: a principal rides the door's own ?principal= query.
+    await client.observe({ principal: 'rook' });
+    assert.equal(calls[0].url, 'http://127.0.0.1:3789/observe?principal=rook');
+    // act: the principal rides TOP-LEVEL, so a scalar value never swallows it.
+    await client.act('world:wolf_7', 'activate', 'x', { principal: 'rook' });
+    assert.deepEqual(calls[1].body, { id: 'world:wolf_7', verb: 'activate', value: 'x', principal: 'rook' });
+    // No principal: the reference shapes are byte-identical.
+    await client.observe();
+    assert.equal(calls[2].url, 'http://127.0.0.1:3789/observe');
+    await client.act('ui:start');
+    assert.deepEqual(calls[3].body, { id: 'ui:start' });
+});
+
 test('vant adapter: pursueOne does exactly one act', async () => {
     const b = demo();
     let acts = 0;
