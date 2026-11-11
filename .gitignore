@@ -20,9 +20,20 @@ docs/pagefind*
 # os / editor
 .DS_Store
 *.log
+*.swp
 .vscode/
 .idea/
+Thumbs.db
 
 # npm
 npm-debug.log*
 *.tgz
+
+# install/report noise (the family block; govstruct canon)
+coverage/
+.npm/
+
+# Environment files never travel with the repo.
+.env
+.env.*
+!.env.example
