@@ -15,6 +15,19 @@ Google Search Console showed the family's properties under a breadcrumbs enhance
 - Receipts: docs config validates against the pinned engine; docs sync:check PASS where generated.
 - No version bump; a discovery-surface opt-in.
 
+### Added
+
+- **`DoorClient` carries a `principal` (multi-agent doors).** A world that
+  seats more than one body behind one door (synmergia's agent-play lane) names
+  WHICH body a primitive drives with a `principal` (absent/'' = the local seat).
+  `observe({ principal })` rides the door's own `?principal=` query and
+  `act(id, verb, value, { principal })` rides a top-level `principal` on the
+  `/act` body -- top-level because the door folds a dictionary `value` into its
+  args, so a principal folded into `value` would be swallowed whenever `value`
+  is a scalar. Remote-only: an in-process bridge has one seat, and every
+  no-principal call keeps its byte-identical reference shape. Pin:
+  `tests/bridgeworks.test.mjs` "DoorClient carries a principal on the remote
+  wire".
 
 ## [1.2.1] - 2026-11-04
 
