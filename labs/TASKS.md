@@ -3,6 +3,18 @@
 Operational history. Stable conventions live in `AGENTS.md`; the normative
 contract lives in `SPEC.md`.
 
+## 2026-11-11 - the thesis band lands on the content grid (mobile)
+
+Owner report (via the family sweep): the thesis band - the accent-ruled pull-quote below the hero - read as a full-bleed bar on mobile. Bold text, block edge-to-edge, no margin, "might be missing a css parent container." Owner is mobile-first.
+
+**Root cause (measured).** The accent was a `border-left` on `.band.thesis .wrap`, and `.wrap` is content-box. Desktop centres a 960px `.wrap`, so the rule landed on the grid by luck; a narrow `.wrap` fills the width, so its left border sat flush at x=0 - a full-height 3px accent bar on the screen edge. Receipt: 390px headless screenshot; accent-column scan found the rule at x=0,1,2.
+
+**Fix (`web/src/styles.css`).** `.band.thesis { padding-left/right: 20px }` gives the band the gutter (rule can never reach the edge; the full-bleed background is untouched since padding is inside the background box), and `.band.thesis .wrap { padding-left: 17px }` keeps `3px border + 17px pad = 20px`, so the band box stays the same width as every section.
+
+**Receipts.** Probe at 1280px: band `.wrap` on the section grid (`RULE ON GRID: true, BOX MATCH: true`); 390px rule inset (was x=0), no horizontal overflow.
+
+**Parity.** memstruct carried the identical defect (the lander CSS is the family shell); the same fix lands there.
+
 ## 2026-11-04 - the marketing lander + npm in the menus (1.2.1 cut)
 
 Session context: the owner asked for a real lander homepage on `/web` - "go

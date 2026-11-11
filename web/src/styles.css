@@ -288,8 +288,14 @@ html[data-theme="light"] .theme-switch .icon-moon { display: block; }
    carry the accent, the rest stays ink - so the line reads as one designed
    statement instead of a flat paragraph. (Only .hero .accent had a rule;
    the band's spans were falling back to plain ink, which is why the whole
-   block read as an unstyled wall of bold text.) */
-.band.thesis .wrap { border-left: 3px solid var(--accent); padding-left: 24px; }
+   block read as an unstyled wall of bold text.) Two geometry rules keep the
+   accent rule on the content grid: the band carries the .wrap gutter on both
+   sides (.wrap is content-box, so on narrow screens its left border otherwise
+   landed flush at x=0 and the block read as a full-bleed bar), and the wrap's
+   3px border + 17px pad = the 20px gutter every section uses, so the band
+   box is the same width as its siblings (a 24px pad made it 7px wider). */
+.band.thesis { padding-left: 20px; padding-right: 20px; }
+.band.thesis .wrap { border-left: 3px solid var(--accent); padding-left: 17px; }
 .band-line .accent { color: var(--accent); }
 .band-cta { text-align: left; padding: 56px 0; }
 .band-cta h2 { font-size: clamp(22px, 3.4vw, 32px); margin: 0 0 8px; font-weight: 800; letter-spacing: -0.01em; }

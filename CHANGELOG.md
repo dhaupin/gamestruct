@@ -6,6 +6,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### 2026-11-11 - the thesis band lands on the content grid (mobile)
+
+The thesis band - the accent-ruled pull-quote below the hero - rendered as a full-bleed bar on mobile: bold text, block edge-to-edge, no margin.
+
+**Root cause (measured, not guessed).** The accent was a `border-left` on `.band.thesis .wrap`, and `.wrap` is content-box. Desktop centres a 960px `.wrap`, so the rule landed on the content grid by luck; on a narrow viewport `.wrap` fills the width, so its left border sat flush at the viewport edge (x=0) - a full-height 3px accent bar hugging the screen edge, with the text pushed in by the pad. Receipt: 390px headless screenshot; the accent-column scan found the rule at x=0,1,2.
+
+**The fix (`web/src/styles.css`).** Two geometry rules keep the rule on the grid at every width:
+- `.band.thesis { padding-left: 20px; padding-right: 20px; }` - the band carries the `.wrap` gutter on both sides, so the rule can never sit flush against the viewport edge on narrow screens. The band's full-bleed background is unaffected (padding sits inside the background box).
+- `.band.thesis .wrap { border-left: 3px solid var(--accent); padding-left: 17px; }` - `3px border + 17px pad = the 20px gutter` every section's `.wrap` uses, so the band box is the same width as its siblings (the old 24px pad made it 7px wider).
+
+**Receipts.** Rebuilt web; probe at 1280px: band `.wrap` on the section grid (`RULE ON GRID: true, BOX MATCH: true`). At 390px the accent rule sits inset (was flush at x=0), no horizontal overflow.
+
+**Parity.** memstruct carried the identical defect (the lander CSS is the family shell); the same fix lands there. No version bump; the play contract is unchanged.
+
 ### 2026-11-03 - breadcrumbs on (engine + this site)
 
 Google Search Console showed the family's properties under a breadcrumbs enhancement with 0 results. Recon split the fleet: the docs sites run freestruct (auto BreadcrumbList since 1.1.0); the product sites run prestruct, whose `buildJsonLd()` is site-wide by contract and could never emit a per-route trail. prestruct gained engine-level `breadcrumb: true` (injectMeta owns the route path), and this repo turned the discovery surface on in its configs.
