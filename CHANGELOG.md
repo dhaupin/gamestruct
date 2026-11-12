@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### 2026-11-12 - the family status grid lights up (CSP connect-src)
+
+Owner report: the `/status` family grid showed a row of "not serving the dialect (Failed to fetch)" for every sibling. **Root cause (measured, not guessed):** each sibling's `/status.json` answered `200` with `access-control-allow-origin: *`, so the server half was correct; the page's own `Content-Security-Policy` carried `connect-src 'self' https://cloudflareinsights.com`, which governs `fetch()` *before* any CORS header is consulted. The browser refused every cross-origin read and the island rendered the refusal as "Failed to fetch". Receipt: headless chromium on `/status` logged `Refused to connect because it violates the document's Content Security Policy` for each sibling.
+
+- `web/public/_headers` - `connect-src` now lists the family member origins the island fetches (`web/src/components/FamilyStatusIsland.jsx`), self excluded. `tests/status.test.mjs` pins the subset, so the island's table and the served CSP can never drift apart silently again (a missing origin now fails by name).
+
 ### 2026-11-11 - the mobile nav fits the viewport
 
 Owner report (mobile-first): the header overflowed the phone screen and the burger - the only menu control below 640px - sat off-screen. Measured at 390px (headless probe): `document.scrollWidth` 431 vs `clientWidth` 375, the burger at x=397..431. The right cluster (GitHub icon + paint-scheme select + theme switch + burger) needs ~200px against ~144px free after the wordmark, so the row could not shrink.
