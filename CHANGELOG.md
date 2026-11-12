@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### 2026-11-11 - the mobile nav fits the viewport
+
+Owner report (mobile-first): the header overflowed the phone screen and the burger - the only menu control below 640px - sat off-screen. Measured at 390px (headless probe): `document.scrollWidth` 431 vs `clientWidth` 375, the burger at x=397..431. The right cluster (GitHub icon + paint-scheme select + theme switch + burger) needs ~200px against ~144px free after the wordmark, so the row could not shrink.
+
+- `web/src/styles.css` (the 640px block) - the badge (decorative) hides first, the gaps tighten (`.nav-inner` 22->8px, `.nav-right` 8->4px), and the wordmark may shrink (`.brand { min-width: 0; overflow: hidden; white-space: nowrap }`) so the row always fits; the burger can never land off-screen. Every control is kept.
+- Receipts: rebuilt web dist probed at 320/360/375/390/414px - no horizontal overflow at any width, burger on-screen, all controls present; `npm run check` green.
+
 ### 2026-11-11 - the thesis band lands on the content grid (mobile)
 
 The thesis band - the accent-ruled pull-quote below the hero - rendered as a full-bleed bar on mobile: bold text, block edge-to-edge, no margin.
