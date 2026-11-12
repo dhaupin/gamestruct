@@ -307,3 +307,17 @@ Owner report (mobile-first): the header overflowed the phone screen and the burg
 - **Fix (`web/src/styles.css`, the 640px block).** The decorative badge hides, the gaps tighten (`.nav-inner` 22->8px, `.nav-right` 8->4px), and the wordmark may shrink (`.brand { min-width: 0; overflow: hidden; white-space: nowrap }`). Every control is kept; the row can always fit, so the burger is always reachable.
 - **Receipts.** Rebuilt dist probed at 320/360/375/390/414px - no overflow at any width, burger on-screen, all controls present. `npm run check` green.
 - **Fleet.** The same defect + fix landed in all 9 sites carrying the family shell (coreforge, crashtest, govstruct, monoforge, poststruct, eyestruct, packstruct, memstruct, gamestruct); coreforge's `templates/site/` carries the same block, so a stamped repo inherits it.
+
+---
+
+## 2026-11-12 - the family status grid lights up (the CSP connect-src fix)
+
+Owner report: the `/status` page's family grid showed a bunch of rows reading "not serving the dialect (Failed to fetch)".
+
+**Root cause (measured, not guessed).** The server half was already correct: every sibling's `/status.json` answered `200` with `access-control-allow-origin: *`. The failure was the page's own `Content-Security-Policy`, whose `connect-src` was `'self' https://cloudflareinsights.com` (the generic template value). `connect-src` governs `fetch()` BEFORE any CORS header is consulted, so the browser refused every cross-origin read and the island rendered the refusal as "Failed to fetch" - a dark row with a correct 200 behind it. Receipt: headless chromium on `/status` logged `Refused to connect because it violates the document's Content Security Policy` for each sibling origin; the same probe against the served files showed 200 + ACAO `*`.
+
+**Fix (`web/public/_headers`).** `connect-src` now lists the family member origins the island fetches (`web/src/components/FamilyStatusIsland.jsx`), self excluded. The list must stay a superset of the island's table minus self.
+
+**The guard (a new law ships with a fixture that breaks it).** `tests/status.test.mjs` gains the reader-clause leg: it reads the island's `origin:` rows and the served CSP, and fails by name for any sibling origin the CSP omits. Proved both ways - removing an origin from the CSP fails the leg; restoring it passes.
+
+**Scope.** The same defect + fix landed in gamestruct (the sibling whose island also fetches the full family). The other island repos already carried the sibling origins in their `connect-src`.
