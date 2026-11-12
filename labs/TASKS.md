@@ -321,3 +321,14 @@ Owner report: the `/status` page's family grid showed a bunch of rows reading "n
 **The guard (a new law ships with a fixture that breaks it).** `tests/status.test.mjs` gains the reader-clause leg: it reads the island's `origin:` rows and the served CSP, and fails by name for any sibling origin the CSP omits. Proved both ways - removing an origin from the CSP fails the leg; restoring it passes.
 
 **Scope.** The same defect + fix landed in gamestruct (the sibling whose island also fetches the full family). The other island repos already carried the sibling origins in their `connect-src`.
+
+### 2026-11-12 - session: the island sees the whole family (interop)
+
+The family release-readiness pass (owner-driven) swept all eight island sites. One interop defect: the `/status` island hand-types its sibling set, and this site's set had drifted - this site listed seven members (through `gamestruct`), missing `memstruct`. Both members already serve the family-status@1 dialect, so this page simply could not render them.
+
+- **The fix.** `web/src/components/FamilyStatusIsland.jsx` now lists every other family member, and `web/public/_headers` `connect-src` gains `https://gamestruct.creadev.org` and `https://memstruct.creadev.org` (the reader half - CSP governs `fetch()` before any CORS header). The reader-clause guard stays green.
+- **The sibling census (receipts).** Eight sites carry the island: eyestruct, crashtest, poststruct, packstruct, govstruct, monoforge, gamestruct, memstruct. Only `memstruct` listed all eight; the rest were missing the two newest members. All eight are now aligned (self handled per each site's own convention - crashtest/govstruct/monoforge exclude self, the rest include it).
+- **Battery.** `npm test` green after the change.
+- **The parent receipt.** The full pass (CSP sweep = no live bug remains; `npm audit --omit=dev` = 0 vulnerabilities across all eleven packages; `npm pack --dry-run` clean; two railyard ledger drifts fixed) lives in `dhaupin/railyard` (`CHANGELOG.md` + `labs/TASKS.md`).
+- **No version bump.**
+
