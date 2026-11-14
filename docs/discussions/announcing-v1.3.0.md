@@ -1,5 +1,5 @@
 ---
-permalink: discussions/announcing-v1.3.0
+permalink: discussions/announcing-v1.3.0/
 layout: default
 title: Announcing gamestruct v1.3.0
 description: gamestruct v1.3.0 - the DoorClient gains a principal for multi-agent doors, plus the family floor moves and the site-shell catch-up. The file IS the announcement.

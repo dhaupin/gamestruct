@@ -1,5 +1,5 @@
 ---
-permalink: discussions/announcing-v1.1.1
+permalink: discussions/announcing-v1.1.1/
 layout: default
 title: Announcing gamestruct v1.1.1
 description: The gamestruct v1.1.1 release post - the file IS the announcement; copy the raw markdown from GitHub into Discussions. Technical, changelog-style.
