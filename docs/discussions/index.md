@@ -21,13 +21,13 @@ Source of truth (link-not-copy): https://github.com/dhaupin/crashtest/blob/main/
 
 ## Index
 
-| Post | Version | Status |
-|------|---------|--------|
-| `announcing-v1.0.0.md` | 1.0.0 | 2026-11-09 on npm |
-| `announcing-v1.1.0.md` | 1.1.0 | 2026-11-09 on npm |
-| `announcing-v1.1.1.md` | 1.1.1 | 2026-11-10 on npm |
-| `announcing-v1.2.0.md` | 1.2.0 | 2026-11-10 on npm |
-| `announcing-v1.2.1.md` | 1.2.1 | 2026-11-04 on npm |
-| `announcing-v1.3.0.md` | 1.3.0 | staged for the v1.3.0 tag |
+| post | version | live |
+| --- | --- | --- |
+| [Announcing gamestruct v1.3.0](/gamestruct/discussions/announcing-v1.3.0/) | 1.3.0 | 2026-11-13 on npm |
+| [Announcing gamestruct v1.2.1](/gamestruct/discussions/announcing-v1.2.1/) | 1.2.1 | 2026-11-10 on npm |
+| [Announcing gamestruct v1.2.0](/gamestruct/discussions/announcing-v1.2.0/) | 1.2.0 | 2026-11-10 on npm |
+| [Announcing gamestruct v1.1.1](/gamestruct/discussions/announcing-v1.1.1/) | 1.1.1 | 2026-11-10 on npm |
+| [Announcing gamestruct v1.1.0](/gamestruct/discussions/announcing-v1.1.0/) | 1.1.0 | 2026-11-09 on npm |
+| [Announcing gamestruct v1.0.0](/gamestruct/discussions/announcing-v1.0.0/) | 1.0.0 | 2026-11-09 on npm |
 
 To publish one: open the file, copy the raw markdown (GitHub: **Raw**), strip the frontmatter block at the top, and paste it into a GitHub Discussions announcement for that version.
