@@ -397,6 +397,35 @@ test('vant adapter: DoorClient drives an in-process bridge', async () => {
     assert.equal(res.ok, true);
 });
 
+test('vant adapter: find() reads a REAL world door via mapNodes (not just nodes)', async () => {
+    // The catalog leg was fixed to fold a world door's flat `actions[]`
+    // through mapNodes; find() read `snap.nodes` directly and was blind on
+    // exactly the doors that need it. The SAME normalizer must drive both.
+    const http = await import('node:http');
+    const server = http.createServer((req, res) => {
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify(req.url.startsWith('/observe') ? doorSnapshot() : { ok: true }));
+    });
+    await new Promise((r) => server.listen(0, '127.0.0.1', r));
+    const port = server.address().port;
+    try {
+        const client = new DoorClient({ url: 'http://127.0.0.1:' + port, mapNodes: doorNodes });
+        const found = await client.find({ name: 'start' });
+        assert.ok(found, 'find() located a handle over a world-door wire');
+        assert.equal(found.id, 'ui:MainMenu/MenuButtons/StartButton');
+        assert.equal(found.role, ROLES.BUTTON);
+        // Role filter rides the same fold.
+        const wolf = await client.find({ role: ROLES.LISTITEM });
+        assert.equal(wolf.id, 'world:wolf_1');
+        // No match -> null, never a throw; a blind door (no mapNodes) -> null.
+        assert.equal(await client.find({ name: 'nope' }), null);
+        const blind = new DoorClient({ url: 'http://127.0.0.1:' + port });
+        assert.equal(await blind.find({ name: 'start' }), null);
+    } finally {
+        await new Promise((r) => server.close(r));
+    }
+});
+
 test('vant adapter: DoorClient catalog over a bridge', async () => {
     const client = new DoorClient({ bridge: demo() });
     const cat = await client.catalog();
