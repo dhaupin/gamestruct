@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "name": "bridge-shapes",
+  "description": "Check-profile verifiers over a captured gamestruct door surface (gamestruct-conformance.json): every node carries a unique ui:/world: stable handle, every interactive node is named and declares an action, the agent catalog carries exactly one tool per actionable with an inputSchema, and every refusal is an honest { ok:false, reason } value. Pure reads over a committed bundle - zero network, zero writes, zero imports from the library it grades.",
+  "version": "0.1.0",
+  "entry": "index.mjs",
+  "env": {
+    "fs": {
+      "targets": ["gamestruct-conformance.json"]
+    }
+  },
+  "implements": "packstruct@1",
+  "armedCoverage": "test/fixtures/run.mjs"
+}

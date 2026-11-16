@@ -6,6 +6,50 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### 2026-11-15 - the packs surface lands (packstruct@1 parity with the family)
+
+gamestruct was the only struct-family repo with no `packs/` directory: eyestruct,
+poststruct, monoforge, crashtest, packstruct and memstruct all ship a
+`packs/public/` of packstruct@1 packs in their npm tarballs and wire a
+`lint:packs` lane. This cut closes the gap.
+
+- **`lib/packs.mjs`** - the pack loader (packstruct SPEC v1). Zero-dependency
+  (builtins only, so the "no runtime deps" law holds). It enforces the section-2
+  manifest grammar AT LOAD - kebab name + dir match, `schemaVersion` 1, dotted
+  version, non-empty description, a relative entry that exists PHYSICALLY inside
+  the pack dir (a symlink escaping the pack refuses), a cross-pack name
+  collision, a null default export - every refusal instant, one-line, and naming
+  the pack (SPEC section 5). Exit ladder 0 clean / 1 violations / 2 usage.
+  Exported as `gamestruct/packs`.
+- **`packs/public/bridge-shapes/`** - the first pack, a `check`-profile pack
+  over a captured door surface (`gamestruct-conformance.json`): every node
+  carries a unique `ui:`/`world:` handle (N1), every interactive node is named
+  and declares an action (N6/N8), the agent catalog carries exactly one tool per
+  actionable with an `inputSchema` (N13/N17), and every refusal is an honest
+  `{ ok:false, reason }` value (N21). It imports nothing from `lib/`, so an
+  adopter proves conformance without pulling the library into its test lane. It
+  ships its own `test/fixtures/` (clean -> PASSED, broken -> EXPLOITED, absent
+  -> BOUNDED), declared as the manifest's `armedCoverage`.
+- **The lanes.** `npm run packs` (the runner over `packs/public`),
+  `npm run lint:packs` (`packstruct lint packs --deep`) and `npm run conform:packs`
+  (`packstruct audit-conformance . --loader "node lib/packs.mjs {packs}"` - 10/10
+  cases honored). `check` now runs all three. `packstruct@1.1.2` is an exact
+  devDependency (the family companion-pin convention); the shipped library stays
+  zero-dependency.
+- **`packs/` ships in the tarball** (`package.json` files) - `packs/README.md`,
+  the manifest, the entry and its fixtures. The release ladder is invoked with
+  `--allowed packs/` (the family exemption eyestruct carries for the packs it
+  ships), in both the offline `release-verify` test and the publish lane's verify
+  job.
+- **The status dialect now counts the packs.** `web/scripts/build-status.mjs`
+  enumerates the committed manifests and censuses each entry's check count
+  (the family-status@1 `packs:[{name, spec, profile, manifest, cases}]` row),
+  refusing the status if a committed pack cannot be read or imported - the
+  served dialect can no longer lag the pack tree. `docs/status.md` drops the
+  stale "ships no packs yet".
+- **CI installs hermetically** (`npm ci`) so the packs lane runs against the
+  pinned linter, in both `test.yml` and the publish gate.
+
 ### 2026-11-13 - the release posts were invisible to the SEO pipeline (permalink shape)
 
 Every `docs/discussions/announcing-vX.Y.Z.md` carried a dotted, slashless permalink (`permalink: discussions/announcing-vX.Y.Z`). Jekyll reads the `.0` as a file extension and emits the page EXTENSIONLESS on disk; freestruct's page scanner matches only `.html`/`.htm`, so the posts were invisible to the post-build layer - no sitemap `<loc>`, no og/canonical - though they served 200. The live sitemap listed none of them. The trailing-slash form (`discussions/announcing-vX.Y.Z/`) emits `<slug>/index.html` and is seen. The index is rebuilt: every row links the slash form, ordered newest first, and the stale "staged for the tag" markers are corrected against the registry. Two biting tests in `test/docs-post-permalinks.test.mjs`. Ported from eyestruct (the same bug, fixed there first).

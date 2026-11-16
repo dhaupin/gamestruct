@@ -1,0 +1,19 @@
+{
+  "observe": {
+    "nodes": [
+      { "id": "ui:Broken/Dup", "role": "button", "name": "One", "actions": ["activate"] },
+      { "id": "ui:Broken/Dup", "role": "button", "name": "Two", "actions": ["activate"] },
+      { "id": "ui:Broken/NoName", "role": "button", "actions": ["activate"] },
+      { "id": "ui:Broken/Inert", "role": "link", "name": "Looks clickable" }
+    ]
+  },
+  "catalog": {
+    "tools": [
+      { "name": "act__ui__Broken__Dup", "_handle": "ui:Broken/Dup", "inputSchema": { "type": "object" } },
+      { "name": "act__ui__Broken__NoSchema", "_handle": "ui:Broken/NoName" }
+    ]
+  },
+  "refusals": [
+    { "call": "act('ui:whatever')", "result": { "ok": true } }
+  ]
+}
