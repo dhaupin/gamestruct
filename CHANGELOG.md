@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-15
+
 ### 2026-11-15 - the packs surface lands (packstruct@1 parity with the family)
 
 gamestruct was the only struct-family repo with no `packs/` directory: eyestruct,
