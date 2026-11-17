@@ -23,6 +23,7 @@ Source of truth (link-not-copy): https://github.com/dhaupin/crashtest/blob/main/
 
 | post | version | live |
 | --- | --- | --- |
+| [Announcing gamestruct v1.4.0](/gamestruct/discussions/announcing-v1.4.0/) | 1.4.0 | 2026-11-15 on npm |
 | [Announcing gamestruct v1.3.0](/gamestruct/discussions/announcing-v1.3.0/) | 1.3.0 | 2026-11-13 on npm |
 | [Announcing gamestruct v1.2.1](/gamestruct/discussions/announcing-v1.2.1/) | 1.2.1 | 2026-11-10 on npm |
 | [Announcing gamestruct v1.2.0](/gamestruct/discussions/announcing-v1.2.0/) | 1.2.0 | 2026-11-10 on npm |
