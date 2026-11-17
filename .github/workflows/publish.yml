@@ -108,9 +108,12 @@ jobs:
           echo "publish gate: $TAG passes the 0.x refusal and the tag==version gate"
           echo "version=$V" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-      # gamestruct is zero-dependency, so there is no lockfile and nothing to
-      # install; the gate above is the whole setup. npm publish below runs
-      # prepublishOnly (npm test && npm run check) regardless.
+      # gamestruct's runtime is zero-dependency, but the battery gates the
+      # packs lane: `npm run check` runs lint:packs + conform:packs through the
+      # packstruct@1.1.2 devDependency (the family companion-pin convention),
+      # so the hermetic install is required before npm publish's prepublishOnly.
+      - name: Install (hermetic dev tooling for the packs lane)
+        run: npm ci --no-fund --no-audit
       # Idempotent: if the registry already has this exact version -- e.g. the
       # release was re-fired after fixing a later workflow -- skip the publish
       # instead of failing red on "cannot publish over the previously published
@@ -203,5 +206,5 @@ jobs:
           V="$(node -p "require('./package.json').version")"
           EXPECTED_EXPORTS="$(node -p "Object.keys(require('./package.json').exports).join(',')")"
           GS_PROBE="const p=require('gamestruct');if(typeof p.Bridge!=='function')process.exit(1);if(p.VERSION!=='$V')process.exit(1)"
-          node scripts/verify-release.cjs --npm --version "$V" --exports "$EXPECTED_EXPORTS" --probe "$GS_PROBE"
+          node scripts/verify-release.cjs --npm --version "$V" --exports "$EXPECTED_EXPORTS" --probe "$GS_PROBE" --allowed "packs/"
           node scripts/verify-release.cjs --gh --tag "v$V" --asset "gamestruct-$V.tgz"

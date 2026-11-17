@@ -12,9 +12,10 @@
 // Case 2 (negative, fully offline): a doctored tarball carrying a file under
 //   a forbidden prefix (labs/) is refused BY NAME, before any install.
 //
-// gamestruct specifics: the tarball ships `bin/` + `lib/` only (package.json
-// files), so no `--allow` exemption is needed - the family-default forbidden
-// scan is exactly right for this tree.
+// gamestruct specifics: the tarball ships `bin/` + `lib/` + `packs/`
+// (package.json files). `packs/` is a family-default forbidden prefix, so the
+// ladder is invoked with `--allowed packs/` - the same exemption eyestruct
+// carries for the packstruct@1 packs it ships.
 
 const test = require('node:test')
 const assert = require('node:assert/strict')
@@ -50,7 +51,7 @@ function packEnv() {
 test('the pack ladder verifies real npm pack output (contents + identity + bin)', () => {
   const work = fs.mkdtempSync(path.join(os.tmpdir(), 'release-verify-'))
   const tgz = packTree(work)
-  const r = spawnSync('node', [script, '--pack', tgz, '--version', pkg.version, '--exports', exportsKeys], { cwd: root, encoding: 'utf8', timeout: 300000 })
+  const r = spawnSync('node', [script, '--pack', tgz, '--version', pkg.version, '--exports', exportsKeys, '--allowed', 'packs/'], { cwd: root, encoding: 'utf8', timeout: 300000 })
   const out = `${r.stdout}\n${r.stderr}`
   assert.equal(r.status, 0, `pack ladder failed (${r.status}):\n${out}`)
   assert.ok(out.includes('PASS forbidden scan'), 'forbidden scan never ran')
@@ -178,7 +179,7 @@ test('the pack ladder survives a phone npm whose --dry-run --json probe is empty
     '',
   ].join('\n'))
   fs.chmodSync(shim, 0o755)
-  const r = spawnSync('node', [script, '--pack', tgz, '--version', pkg.version, '--exports', exportsKeys], {
+  const r = spawnSync('node', [script, '--pack', tgz, '--version', pkg.version, '--exports', exportsKeys, '--allowed', 'packs/'], {
     cwd: root,
     encoding: 'utf8',
     timeout: 300000,

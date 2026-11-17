@@ -33,6 +33,10 @@ npm-debug.log*
 coverage/
 .npm/
 
+# the gitignored WIP pack lane (packstruct#16): the private packs an author is
+# drafting. packs/public/ is tracked and shipped; packs/local/ is never either.
+packs/local/
+
 # Environment files never travel with the repo.
 .env
 .env.*

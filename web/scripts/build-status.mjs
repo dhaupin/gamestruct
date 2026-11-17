@@ -18,13 +18,15 @@
  * or a live check not in the contract -> "RED". Verdicts come from the live
  * run reconciled against the committed list, never from prose.
  *
- * gamestruct ships no packs yet, so `packs` is [] - honestly empty, not
- * omitted.
+ * The `packs` array enumerates the committed packstruct@1 packs under
+ * packs/public (the same manifests `packstruct lint` reads), each with its
+ * declared check count censused from the entry module - so the served dialect
+ * cannot lag the pack tree.
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..')
@@ -82,8 +84,48 @@ async function selfcheckLeg() {
     return legOf(rows, { leg: 'selfcheck', ledger: 'labs/battery.json' })
 }
 
+// The committed packstruct@1 packs under packs/public, censused from their own
+// manifests and entry modules (the same files `packstruct lint` reads). A
+// manifest that cannot be read or whose entry cannot be imported refuses the
+// status outright - a status that cannot count a committed pack is a guess.
+async function packsOf(root = REPO_ROOT) {
+    const packsDir = join(root, 'packs', 'public')
+    let entries
+    try {
+        entries = readdirSync(packsDir).sort()
+    } catch {
+        return []
+    }
+    const out = []
+    for (const entry of entries) {
+        const dir = join(packsDir, entry)
+        if (!statSync(dir).isDirectory()) continue
+        const manifestRel = `packs/public/${entry}/pack.json`
+        let spec
+        try {
+            spec = JSON.parse(readFileSync(join(dir, 'pack.json'), 'utf8'))
+        } catch (err) {
+            throw new Error(`pack ${entry}: pack.json unreadable (${err.message}) - the status contract refuses a pack it cannot count`)
+        }
+        const entryAbs = join(dir, spec.entry)
+        let cases = 0
+        try {
+            const mod = await import(pathToFileURL(entryAbs).href)
+            const loaded = mod && 'default' in mod ? mod.default : mod
+            for (const key of ['checks', 'attacks', 'scenarios']) {
+                if (Array.isArray(loaded?.[key])) cases += loaded[key].length
+            }
+        } catch (err) {
+            throw new Error(`pack ${entry}: entry "${spec.entry}" unimportable (${err.message}) - the status contract refuses a pack it cannot census`)
+        }
+        out.push({ name: spec.name, spec: 'packstruct@1', profile: 'check', manifest: manifestRel, cases })
+    }
+    return out
+}
+
 export async function build(root = REPO_ROOT) {
     const leg = await selfcheckLeg()
+    const packs = await packsOf(root)
     return {
         schema: 1,
         contract: 'family-status@1',
@@ -92,7 +134,7 @@ export async function build(root = REPO_ROOT) {
         docs: DOCS,
         asOf: new Date().toISOString().slice(0, 10),
         legs: [leg],
-        packs: [],
+        packs,
     }
 }
 

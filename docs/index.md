@@ -31,6 +31,7 @@ stream. Build those once, and both audiences are served.
 | [Bindings]({{ '/bindings/' | relative_url }}) | HTTP + MCP, fail-closed auth |
 | [Adapters]({{ '/adapters/' | relative_url }}) | the synmergia (world), vant (brain), webform, and dom reference adapters |
 | [CLI]({{ '/cli/' | relative_url }}) | `gamestruct check`, `doctor`, and `tui` |
+| [Packs]({{ '/packs/' | relative_url }}) | the extension surface: packstruct@1 packs that grade a door surface |
 | [Family status]({{ '/status/' | relative_url }}) | the `family-status@1` dialect gamestruct serves |
 
 The normative spec lives in [`SPEC.md`](https://github.com/dhaupin/gamestruct/blob/main/SPEC.md).
