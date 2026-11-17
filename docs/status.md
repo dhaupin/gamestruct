@@ -55,7 +55,8 @@ and shows "not serving the dialect", never a guessed row.
 | `legs` | array | `{leg, verdict, cases, counts, ledger}` per leg |
 | `packs` | array | the member's packstruct@1 packs, if any |
 
-gamestruct ships no packs yet, so `packs` is empty - honestly, not omitted.
+gamestruct ships the `bridge-shapes` pack, so `packs` lists it - honestly counted
+from the committed manifest and entry module, never a hand-typed row.
 
 <div class="crosslinks">
 <p><strong>More in these docs:</strong>

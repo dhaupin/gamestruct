@@ -1,0 +1,21 @@
+{
+  "observe": {
+    "nodes": [
+      { "id": "ui:MainMenu/MenuButtons/StartButton", "role": "button", "name": "Start Adventure", "actions": ["activate"], "disabled": false },
+      { "id": "ui:MainMenu/Volume", "role": "slider", "name": "Volume", "actions": ["set_value"], "disabled": false, "value": 50 },
+      { "id": "ui:MainMenu/Tip", "role": "status", "name": "Ready" },
+      { "id": "world:wolf_1", "role": "listitem", "name": "Attack Wolf", "actions": ["activate"], "disabled": false }
+    ]
+  },
+  "catalog": {
+    "tools": [
+      { "name": "act__ui__MainMenu__MenuButtons__StartButton", "_handle": "ui:MainMenu/MenuButtons/StartButton", "inputSchema": { "type": "object", "properties": {} } },
+      { "name": "act__ui__MainMenu__Volume", "_handle": "ui:MainMenu/Volume", "inputSchema": { "type": "object", "properties": { "value": { "type": "number" } } } },
+      { "name": "act__world__wolf_1", "_handle": "world:wolf_1", "inputSchema": { "type": "object", "properties": {} } }
+    ]
+  },
+  "refusals": [
+    { "call": "act('ui:nope')", "result": { "ok": false, "reason": "no such handle: ui:nope" } },
+    { "call": "act('ui:MainMenu/Volume','activate')", "result": { "ok": false, "reason": "the node does not accept \"activate\": ui:MainMenu/Volume" } }
+  ]
+}

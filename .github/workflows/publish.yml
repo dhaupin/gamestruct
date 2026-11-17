@@ -76,9 +76,9 @@ jobs:
       version: ${{ steps.gate.outputs.version }}
       tag: ${{ steps.gate.outputs.tag }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { fetch-depth: 0 }
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: 22 }
       - name: npm floor for trusted publishing (11.5.1+)
         run: npm install -g npm@^11
@@ -108,9 +108,12 @@ jobs:
           echo "publish gate: $TAG passes the 0.x refusal and the tag==version gate"
           echo "version=$V" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-      # gamestruct is zero-dependency, so there is no lockfile and nothing to
-      # install; the gate above is the whole setup. npm publish below runs
-      # prepublishOnly (npm test && npm run check) regardless.
+      # gamestruct's runtime is zero-dependency, but the battery gates the
+      # packs lane: `npm run check` runs lint:packs + conform:packs through the
+      # packstruct@1.1.2 devDependency (the family companion-pin convention),
+      # so the hermetic install is required before npm publish's prepublishOnly.
+      - name: Install (hermetic dev tooling for the packs lane)
+        run: npm ci --no-fund --no-audit
       # Idempotent: if the registry already has this exact version -- e.g. the
       # release was re-fired after fixing a later workflow -- skip the publish
       # instead of failing red on "cannot publish over the previously published
@@ -130,9 +133,9 @@ jobs:
     needs: publish
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { fetch-depth: 0 }
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: 22 }
       # BLOCK_VERSION/TAG arrive through env from the publish job's outputs
       # - the same no-inline-interpolation rule the gate obeys. notes.md
@@ -190,9 +193,9 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { fetch-depth: 0 }
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: 22 }
       - name: the post-publish trust ladder (npm + GH release)
         env:
@@ -203,5 +206,5 @@ jobs:
           V="$(node -p "require('./package.json').version")"
           EXPECTED_EXPORTS="$(node -p "Object.keys(require('./package.json').exports).join(',')")"
           GS_PROBE="const p=require('gamestruct');if(typeof p.Bridge!=='function')process.exit(1);if(p.VERSION!=='$V')process.exit(1)"
-          node scripts/verify-release.cjs --npm --version "$V" --exports "$EXPECTED_EXPORTS" --probe "$GS_PROBE"
+          node scripts/verify-release.cjs --npm --version "$V" --exports "$EXPECTED_EXPORTS" --probe "$GS_PROBE" --allowed "packs/"
           node scripts/verify-release.cjs --gh --tag "v$V" --asset "gamestruct-$V.tgz"

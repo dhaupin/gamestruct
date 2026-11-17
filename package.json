@@ -1,11 +1,12 @@
 {
   "name": "gamestruct",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "type": "module",
   "description": "gamestruct - the game-agent lane bridge: one semantic tree that serves both a human's assistive technology and a machine agent. Four primitives (observe/act/wait_for/events), two lanes, one contract.",
   "files": [
     "bin/",
     "lib/",
+    "packs/",
     "SPEC.md",
     "LICENSE"
   ],
@@ -23,14 +24,18 @@
     "./adapters/vant": "./lib/adapters/vant.mjs",
     "./adapters/webform": "./lib/adapters/webform.mjs",
     "./adapters/dom": "./lib/adapters/dom.mjs",
-    "./hosts/tui": "./lib/hosts/tui.mjs"
+    "./hosts/tui": "./lib/hosts/tui.mjs",
+    "./packs": "./lib/packs.mjs"
   },
   "bin": {
     "gamestruct": "bin/gamestruct.mjs"
   },
   "scripts": {
-    "test": "node tests/version-truth.mjs && node --test tests/bridgeworks.test.mjs tests/status.test.mjs && node --test tests/release-verify.test.cjs tests/ship-from-download.test.cjs tests/docs-post-permalinks.test.mjs",
-    "check": "node --check bin/gamestruct.mjs && node --check lib/index.mjs && node --check lib/version.mjs && node --check lib/roles.mjs && node --check lib/tree.mjs && node --check lib/events.mjs && node --check lib/bridge.mjs && node --check lib/selfcheck.mjs && node --check lib/profiles/human.mjs && node --check lib/profiles/agent.mjs && node --check lib/bindings/http.mjs && node --check lib/bindings/mcp.mjs && node --check lib/adapters/synmergia.mjs && node --check lib/adapters/vant.mjs && node --check lib/adapters/webform.mjs && node --check lib/adapters/dom.mjs && node --check lib/hosts/tui.mjs && node --check scripts/sync-site.mjs && node --check scripts/release-notes.cjs && node --check scripts/verify-release.cjs && node --check scripts/ship-from-download.cjs && node scripts/sync-site.mjs --check && node bin/gamestruct.mjs check",
+    "test": "node tests/version-truth.mjs && node --test tests/bridgeworks.test.mjs tests/packs.test.mjs tests/status.test.mjs && node --test tests/release-verify.test.cjs tests/ship-from-download.test.cjs tests/docs-post-permalinks.test.mjs",
+    "check": "node --check bin/gamestruct.mjs && node --check lib/index.mjs && node --check lib/version.mjs && node --check lib/roles.mjs && node --check lib/tree.mjs && node --check lib/events.mjs && node --check lib/bridge.mjs && node --check lib/selfcheck.mjs && node --check lib/packs.mjs && node --check lib/profiles/human.mjs && node --check lib/profiles/agent.mjs && node --check lib/bindings/http.mjs && node --check lib/bindings/mcp.mjs && node --check lib/adapters/synmergia.mjs && node --check lib/adapters/vant.mjs && node --check lib/adapters/webform.mjs && node --check lib/adapters/dom.mjs && node --check lib/hosts/tui.mjs && node --check scripts/sync-site.mjs && node --check scripts/release-notes.cjs && node --check scripts/verify-release.cjs && node --check scripts/ship-from-download.cjs && node --check scripts/run-packs.mjs && node --check packs/public/bridge-shapes/index.mjs && node --check packs/public/bridge-shapes/test/fixtures/run.mjs && node scripts/sync-site.mjs --check && node bin/gamestruct.mjs check && npm run packs && npm run lint:packs && npm run conform:packs",
+    "packs": "node scripts/run-packs.mjs",
+    "lint:packs": "packstruct lint packs --deep",
+    "conform:packs": "packstruct audit-conformance . --loader \"node lib/packs.mjs {packs}\"",
     "sync": "node scripts/sync-site.mjs",
     "sync:check": "node scripts/sync-site.mjs --check",
     "doctor": "node bin/gamestruct.mjs doctor",
@@ -55,6 +60,9 @@
   "license": "MIT",
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "packstruct": "1.1.2"
   },
   "repository": {
     "type": "git",

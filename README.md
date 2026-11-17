@@ -1,4 +1,4 @@
-# gamestruct 1.3.0
+# gamestruct 1.4.0
 
 **One semantic tree. Two lanes. Four primitives — plus the eyes.** The same
 surface serves a human who uses a screen reader and a machine agent — because
@@ -98,7 +98,9 @@ re-see`. The frame stays on the host; the wire stays small.
 | `lib/adapters/webform.mjs` | reference NON-GAME adapter (a plain form -> a tree; the generality receipt) |
 | `lib/adapters/dom.mjs` | reference DOM adapter (a live element -> a tree; an accessible page is already a door) |
 | `lib/hosts/tui.mjs` | the terminal host (the human lane with no pointer: render, key-driven focus, `run()`) |
+| `lib/packs.mjs` | the pack loader (packstruct@1): load + validate a pack tree, zero-dependency |
 | `bin/gamestruct.mjs` | the CLI: `check`, `doctor`, and `tui` |
+| `packs/public/` | the shipped packs (the extension surface; `bridge-shapes` grades a door) |
 
 ## CLI
 
@@ -155,8 +157,8 @@ and needs no protocol code of its own. That is the point of the split.
 ## Verify before shipping
 
 ```bash
-npm test        # the bridgeworks suite (tree, lanes, bindings, adapters)
-npm run check   # node --check every module + the self-checks
+npm test        # the bridgeworks suite (tree, lanes, bindings, adapters, packs)
+npm run check   # node --check every module + the self-checks + the pack lanes
 npm run doctor  # print both lanes for a demo surface
 ```
 
