@@ -170,10 +170,17 @@ jobs:
           # The registry read replica can lag the publish by seconds; poll
           # (bounded) instead of racing it (the crashtest 1.2.0 cut read
           # ETARGET: no matching version right after publish).
-          for i in $(seq 1 60); do
+          #
+          # The v1.5.0 cut proved the old 60x5s bound (5 min) too tight: the
+          # pack succeeded ~6 min after publish, so this step failed and left
+          # the release with ZERO assets (the release object had already been
+          # cut). Bound raised to 30 min and the sleep backs off 5s -> 30s, so
+          # a slow replica costs patience instead of a red release.
+          for i in $(seq 1 90); do
             if npm pack "gamestruct@$BLOCK_VERSION" --pack-destination "$RUNNER_TEMP" > /dev/null 2>&1; then break; fi
-            if [ "$i" = "60" ]; then echo "the registry never served gamestruct@$BLOCK_VERSION (60 attempts)"; exit 1; fi
-            echo "waiting for gamestruct@$BLOCK_VERSION on the registry (attempt $i/60)"; sleep 5
+            if [ "$i" = "90" ]; then echo "the registry never served gamestruct@$BLOCK_VERSION (90 attempts)"; exit 1; fi
+            WAIT=$(( i * 5 )); [ "$WAIT" -gt 30 ] && WAIT=30
+            echo "waiting for gamestruct@$BLOCK_VERSION on the registry (attempt $i/90, ${WAIT}s)"; sleep "$WAIT"
           done
           gh release upload "$BLOCK_TAG" "$RUNNER_TEMP/gamestruct-$BLOCK_VERSION.tgz" --clobber
 
