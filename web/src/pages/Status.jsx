@@ -43,7 +43,7 @@ export default function Status() {
               <h3><span className="glyph">◉</span> the selfcheck leg</h3>
               <p>The bridgeworks' own battery (<code>lib/selfcheck.mjs</code>):
               the same checks <code>gamestruct check</code> runs - the tree,
-              both lanes, both bindings, and the invariant that the SAME handle
+              both lanes, all three bindings, and the invariant that the SAME handle
               drives both.</p>
             </div>
             <div className="card">

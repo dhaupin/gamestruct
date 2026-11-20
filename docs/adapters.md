@@ -95,6 +95,21 @@ collapsed into a generic `http <status>`.
 const client = new DoorClient({ url, fetch: myWalledFetch })
 ```
 
+A third target is a **same-page embedded door** (SPEC N27) - a host behind a
+language boundary that cannot marshal objects (wasm, FFI, a native addon).
+Wrap it with the embedded binding and pass the facade; the client code above is
+unchanged, so a brain never learns which transport it is on:
+
+```js
+import { createFacade } from 'gamestruct/embedded'
+
+const facade = createFacade({
+  callbacks: { observe, act, events },  // your host callbacks, JSON string in
+  read: () => window.__synAgentResult,  // YOUR side channel, injected
+})
+const client = new DoorClient({ embedded: facade })
+```
+
 A WORLD door serves its own snapshot (`observe()` is a live world: `player`,
 `actions[]`, `events[]`), not a serialized tree. Give the client a `mapNodes`
 normalizer and `catalog()` folds that wire shape into the SPEC node shape:

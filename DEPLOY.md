@@ -92,7 +92,9 @@ as-is into any repo.
   it, and the web rig carries NO version field of its own.
   `tests/version-truth.mjs` refuses any surface that drifts.
 - The spec revision (`SPEC.md` "v1") is its own axis, decoupled from the
-  package semver.
+  package semver. Current: **v1.3** (rules N1-N27). A SPEC revision does not
+  force a package bump, but a package bump MUST carry the revision that shipped
+  with it - the two are read together, never reconciled by hand.
 - Tagged CR = the docs/CHANGELOG npm convention stays exact.
 
 ## Landing site (Cloudflare Pages, gamestruct.creadev.org)

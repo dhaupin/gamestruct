@@ -6,6 +6,45 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### 2026-11-17 - the third binding: EMBEDDED (SPEC v1.3, rule N27)
+
+The contract defined two bindings, both wire-based (HTTP, MCP). Neither covers
+a door in the SAME page or process as its client but separated by a **language
+boundary** that cannot marshal structured values - Godot's `JavaScriptBridge`,
+Emscripten, a native addon, a Python C-extension. That gap was found the hard
+way: Synmergia's browser build could not expose `window.SynmergiaAgent` at all,
+and the three failure modes only showed up live on wasm.
+
+- **`lib/bindings/embedded.mjs`** (new, exported as `gamestruct/embedded`) -
+  two halves, mirroring `http.createHandler`. `createDoor(bridge)` is the HOST
+  side: the three primitives returning JSON **strings** (plus `see` when the
+  surface has eyes), ready to be published on a side channel.
+  `createFacade({ callbacks, read })` is the CLIENT side: raw host callbacks
+  plus an injected reader -> the four primitives returning parsed objects,
+  `waitFor` by polling `observe` (a boundary callback cannot park a host
+  thread), and an honest blind `see`. Every failure (missing callback, throwing
+  callback, empty publish, malformed JSON, no side channel) is a
+  `{ ok:false, reason }` refusal, never a throw into the client's loop.
+- **SPEC v1.3, rule N27 (the boundary carries text)** - the three laws, live-
+  verified on a wasm host at once: a callback's return value does not cross
+  back (it arrives `null`); a structured argument arrives as an opaque foreign
+  handle; an object literal containing host callbacks does not survive the
+  marshal (it lands `undefined`). So: JSON text in, JSON published out, facade
+  built client-side. The side channel is INJECTED, never assumed - naming a
+  host's global would bake one implementation into the contract. Additive and
+  OPTIONAL: an HTTP/MCP door is unaffected.
+- **`DoorClient` gains an `embedded` transport** (`lib/adapters/vant.mjs`) -
+  `new DoorClient({ embedded: facade })` drives an embedded door with the SAME
+  code that drives a `bridge` or a `url`, so a brain never learns which
+  transport it is on (the promise N25 makes for remote, now held for embedded).
+- **Tests** (`tests/bridgeworks.test.mjs`, 9 new cases) - including a boundary
+  SIMULATOR that enforces all three laws, so a binding cannot pass by working
+  in pure JS. Revert-checked: making the facade trust the callback's return
+  value (the naive implementation) fails the suite.
+- **Docs** - `docs/bindings.md` gains the embedded section with the three laws
+  and the two-half example; `AGENTS.md` layout + SPEC revision line updated;
+  two new `gamestruct check` self-checks.
+
 ## [1.4.0] - 2026-11-15
 
 ### 2026-11-15 - the packs surface lands (packstruct@1 parity with the family)

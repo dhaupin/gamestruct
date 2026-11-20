@@ -20,6 +20,8 @@
     "the SAME handle drives both lanes",
     "waitFor resolves when a predicate holds",
     "waitFor times out honestly",
+    "embedded binding carries text and publishes (N27)",
+    "embedded binding refuses honestly with no side channel",
     "http binding serves observe/act/events",
     "http binding refuses a bad token"
   ]
