@@ -987,6 +987,25 @@ test('embedded binding: waitFor polls observe and times out honestly (N3)', asyn
     assert.equal(miss.reason, 'timeout');
 });
 
+test('embedded binding: a REFUSAL snapshot never satisfies a predicate (N3)', async () => {
+    // A dead door answers {ok:false, reason} -- a snapshot with NO fields. A
+    // shallow match against {in_world:false} used to succeed on
+    // `undefined === false`, so waitFor resolved ok:true while the game was
+    // not running: a false success on the one verb an agent uses to WAIT.
+    const facade = embedFacade({
+        callbacks: { observe: () => { published = JSON.stringify({ ok: false, reason: 'driver missing' }); } },
+        read: () => published,
+    });
+    let published = '';
+    // An EMPTY predicate matches everything (the loop body never runs), so a
+    // refusal snapshot satisfied it and waitFor resolved ok:true at once.
+    const refused = await facade.waitFor({}, 80);
+    assert.equal(refused.ok, false, 'a refusal must never resolve as success');
+    assert.equal(refused.reason, 'timeout');
+    const refusedField = await facade.waitFor({ in_world: false }, 80);
+    assert.equal(refusedField.ok, false);
+});
+
 test('embedded binding: the eyes are optional and honest (N22)', async () => {
     const blind = embedFacade({ callbacks: { observe: () => {} }, read: () => '{}' });
     const res = await blind.see({ label: 'x' });

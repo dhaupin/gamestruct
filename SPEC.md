@@ -88,7 +88,10 @@ Rules:
   the node does not declare, and a disabled node. A refusal carries a
   human-readable `reason`.
 - **N3** — `wait_for` MUST resolve with an honest timeout (`reason: "timeout"`)
-  rather than hang or resolve falsely.
+  rather than hang or resolve falsely. A REFUSAL is not a state: an `observe`
+  that answered `{ok:false, reason}` (a dead door, no driver, a dead hook) MUST
+  NOT satisfy any predicate, including the empty predicate `{}` — otherwise
+  `wait_for` resolves `ok:true` while the surface is not even running.
 - **N4** — `events(sinceFrame)` MUST be an honest cursor: calling it twice with
   the same cursor returns the same events; the returned `frame` is monotonic.
 - **N5** — `observe` MUST include the current focus handle and a summary.
