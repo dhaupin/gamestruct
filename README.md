@@ -1,4 +1,4 @@
-# gamestruct 1.4.0
+# gamestruct 1.5.0
 
 **One semantic tree. Two lanes. Four primitives — plus the eyes.** The same
 surface serves a human who uses a screen reader and a machine agent — because

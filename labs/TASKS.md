@@ -424,3 +424,41 @@ went red while everything passed locally. The contract's own note says it:
 **Next (outside-in).** Wire Synmergia's `web/shared/agent-client.js` and
 `web_input_bridge.gd` onto `gamestruct/embedded` so the in-page lane stops
 hand-rolling the side channel and inherits N27 by construction; then re-pin.
+
+## 2026-11-20 - release: v1.5.0 (the embedded binding ships)
+
+**Merged first.** PR #34 (feat/embedded-binding) merged into `staging` at
+`66dbeb7`. Full gate green on the merged tip before the release branch was cut:
+`npm test` 116/0, `npm run check` 22/22 + packs + lint + conformance 10/10,
+status emitter "selfcheck 22 PASS".
+
+**What the release commit carries** (the ladder, matching `release/v1.4.0`):
+- `CHANGELOG.md` - `## [1.5.0] - 2026-11-20` inserted under `[Unreleased]`, the
+  existing `### 2026-11-17 - the third binding` sub-heading riding along.
+- `package.json` + `README.md` H1 -> 1.5.0 (version-truth pins both).
+- `docs/discussions/announcing-v1.5.0.md` + the index row.
+- This log entry.
+
+**Version call: minor, 1.5.0.** Additive only - a new module, a new export, a
+new optional client target, and a SPEC rule explicitly marked OPTIONAL. No
+existing HTTP/MCP door changes behavior. 1.5.0 was unclaimed on npm (latest was
+1.4.0), so no collision.
+
+**Packs audit (asked, verified).** `packs/public/bridge-shapes` ships COMPLETE
+in the tarball - `tar -tzf` matches `find packs -type f` byte for byte, all 6
+files including the clean + broken conformance fixtures and `test/fixtures/run.mjs`
+(the manifest's `armedCoverage`). Verified against an INSTALLED tarball, not just
+a dry-run listing: `packstruct lint --deep` passes and the fixtures run green
+("all 5 check(s) armed on clean + broken + absent - PASS"). The `files` field
+ships `packs/` wholesale, so no fixture is silently dropped by `.npmignore`.
+
+**Pre-existing, not ours.** The web build prints `WARN what/index.html:
+description 166 chars (outside 70-165)`. Confirmed by building at tag `v1.4.0` -
+it warns there too. A warning, not a failure; left alone.
+
+**Known gap (follow-up, not blocking).** `tests/version-truth.mjs` claims to pin
+"every surface that names the CURRENT version" but pins only 3 (web/package.json,
+README H1, the site.config badge derivation). The discussions post frontmatter
+`version:` and the index table version are hand-edited and unguarded - the exact
+"silently-shrunk battery" class `labs/battery.json` exists to refuse, but for
+version strings.
