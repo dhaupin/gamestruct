@@ -1,6 +1,6 @@
 /**
  * pages/What.jsx - what ships in the box: four primitives (+ the eyes), two
- * lanes, two bindings, one tree. Shell conventions kept (usePageMeta in body).
+ * lanes, three bindings, one tree. Shell conventions kept (usePageMeta in body).
  */
 import { Link } from 'react-router-dom'
 import usePageMeta from '../hooks/usePageMeta.js'
@@ -20,7 +20,7 @@ export default function What() {
           <p className="lede">
             A zero-dependency ESM library. One contract - four primitives over
             one semantic tree (plus an optional fifth: the eyes) - with
-            reference renderings for both audiences and two transport bindings.
+            reference renderings for both audiences and three bindings.
           </p>
           <div className="cta-row">
             <a className="btn btn-primary" href={site.repo}>See the repo</a>
@@ -80,7 +80,7 @@ export default function What() {
             </div>
             <div className="card">
               <h3><span className="glyph">⇄</span> the bindings</h3>
-              <p>Transport only: <code>bindings/http</code> (<code>/observe</code>, <code>/act</code>, <code>/wait_for</code>, <code>/events</code>, <code>/see</code>, <code>/health</code>, fail-closed auth) and <code>bindings/mcp</code> (JSON-RPC 2.0).</p>
+              <p>Transport only: <code>bindings/http</code> (<code>/observe</code>, <code>/act</code>, <code>/wait_for</code>, <code>/events</code>, <code>/see</code>, <code>/health</code>, fail-closed auth), <code>bindings/mcp</code> (JSON-RPC 2.0), and <code>bindings/embedded</code> (a door in the same page or process, behind a language boundary - JSON text in, JSON published out).</p>
             </div>
           </div>
         </div>

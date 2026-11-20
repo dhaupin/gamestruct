@@ -1,8 +1,8 @@
 /**
  * gamestruct — the bridgeworks test suite.
  *
- * Covers the tree/roles vocabulary, both lanes, both bindings, and the two
- * reference adapters. Run: `npm test`.
+ * Covers the tree/roles vocabulary, both lanes, all three bindings (HTTP, MCP,
+ * embedded), and the reference adapters. Run: `npm test`.
  */
 
 import { test } from 'node:test';
@@ -780,4 +780,160 @@ test('tui host: hint names the focused node and its verbs', () => {
     const b = demo();
     tui.key(b, 'tab');
     assert.match(tui.hint(b), /button.*Start game.*activate/);
+});
+
+// ---------------------------------------------------------------------------
+// The embedded binding (SPEC N27) - the third binding.
+//
+// A door in the same page/process as its client, behind a language boundary
+// that cannot marshal structured values. The suite's boundary simulator
+// below enforces ALL THREE N27 laws, so a binding that "happens to work" in
+// JS cannot pass: it must work THROUGH the boundary.
+// ---------------------------------------------------------------------------
+
+import { createDoor as embedDoor, createFacade as embedFacade } from '../lib/bindings/embedded.mjs';
+
+/**
+ * A boundary that behaves like a wasm/FFI host. It enforces the three N27
+ * laws so a binding cannot pass by accident:
+ *   - Law 2: a non-string argument never reaches the host (an opaque handle);
+ *   - Law 1: a callback's return value never crosses back (always undefined);
+ *   - the only way out is a side channel the client reads in the same turn.
+ */
+function boundary(host) {
+    let published = '';
+    const call = (fn) => (raw) => {
+        if (raw !== undefined && raw !== null && typeof raw !== 'string') return; // Law 2
+        published = fn(raw); // the host PUBLISHES; Law 1 means it never returns
+    };
+    return {
+        callbacks: { observe: call(host.observe), act: call(host.act), events: call(host.events) },
+        read: () => published,
+    };
+}
+
+test('embedded binding: a door built from a Bridge answers JSON strings (N27)', () => {
+    const b = demo();
+    const door = embedDoor(b);
+    const snap = JSON.parse(door.observe());
+    assert.equal(snap.ok, true);
+    assert.ok(snap.nodes.length);
+    // act crosses as a JSON string and comes back as a JSON string
+    const res = JSON.parse(door.act(JSON.stringify({ id: 'ui:start' })));
+    assert.equal(res.ok, true);
+    assert.equal(res.id, 'ui:start');
+    // a scalar id is accepted too (the door normalizes)
+    assert.equal(JSON.parse(door.act(JSON.stringify('ui:start'))).ok, true);
+    // a bad payload refuses honestly, never throws
+    const bad = JSON.parse(door.act('not json at all {{{'));
+    assert.equal(bad.ok, false);
+    assert.match(bad.reason, /payload/);
+});
+
+test('embedded binding: a facade drives a door THROUGH a boundary (all three N27 laws)', () => {
+    const b = demo();
+    const wire = boundary(embedDoor(b));
+    const facade = embedFacade({ callbacks: wire.callbacks, read: wire.read });
+    const snap = facade.observe();
+    assert.equal(snap.ok, true);
+    assert.ok(snap.nodes.length);
+    const res = facade.act('ui:start');
+    assert.equal(res.ok, true);
+    assert.equal(res.id, 'ui:start');
+    const ev = facade.events(-1);
+    assert.equal(ev.ok, true);
+    assert.ok(Array.isArray(ev.events));
+});
+
+test('embedded binding: a callback that returns a value and never publishes is an honest refusal', () => {
+    // Law 1 in its purest form: a host that RETURNS its result instead of
+    // publishing it yields nothing, so the facade must refuse - never hand
+    // back undefined and pretend it worked.
+    const facade = embedFacade({
+        callbacks: { observe: () => JSON.stringify({ ok: true, nodes: [] }) },
+        read: () => '',
+    });
+    const res = facade.observe();
+    assert.equal(res.ok, false);
+    assert.match(res.reason, /published no observe result/);
+});
+
+test('embedded binding: a missing callback and a throwing callback both refuse by name', () => {
+    const missing = embedFacade({ callbacks: {}, read: () => '{}' });
+    assert.match(missing.observe().reason, /no "observe" callback/);
+    const throwing = embedFacade({
+        callbacks: { act: () => { throw new Error('boom'); } },
+        read: () => '{}',
+    });
+    const res = throwing.act('ui:start');
+    assert.equal(res.ok, false);
+    assert.match(res.reason, /"act" callback threw: boom/);
+});
+
+test('embedded binding: malformed published JSON refuses, never throws', () => {
+    const facade = embedFacade({ callbacks: { observe: () => {} }, read: () => '{not json' });
+    const res = facade.observe();
+    assert.equal(res.ok, false);
+    assert.match(res.reason, /malformed JSON/);
+});
+
+test('embedded binding: no side channel is an honest refusal', () => {
+    const facade = embedFacade({ callbacks: { observe: () => {} } });
+    const res = facade.observe();
+    assert.equal(res.ok, false);
+    assert.match(res.reason, /no side channel/);
+});
+
+test('embedded binding: waitFor polls observe and times out honestly (N3)', async () => {
+    const b = demo();
+    const host = embedDoor(b);
+    let published = '';
+    const facade = embedFacade({
+        callbacks: {
+            observe: (raw) => { published = host.observe(raw); },
+            act: (raw) => { published = host.act(raw); },
+        },
+        read: () => published,
+    });
+    const hit = await facade.waitFor((snap) => snap.nodes.some((n) => n.id === 'ui:start'), 200);
+    assert.equal(hit.ok, true);
+    const miss = await facade.waitFor({ focus: 'nope' }, 60);
+    assert.equal(miss.ok, false);
+    assert.equal(miss.reason, 'timeout');
+});
+
+test('embedded binding: the eyes are optional and honest (N22)', async () => {
+    const blind = embedFacade({ callbacks: { observe: () => {} }, read: () => '{}' });
+    const res = await blind.see({ label: 'x' });
+    assert.equal(res.ok, false);
+    assert.match(res.reason, /no eyes/);
+    assert.equal(blind.canSee, false);
+
+    const sighted = embedFacade({
+        callbacks: { see: (raw) => JSON.stringify({ ok: true, path: '/tmp/x.png' }) },
+        read: () => '',
+    });
+    assert.equal(sighted.canSee, true);
+    const shot = await sighted.see({ label: 'x' });
+    assert.equal(shot.ok, true);
+    assert.equal(shot.path, '/tmp/x.png');
+});
+
+test('embedded binding: DoorClient drives an embedded facade like any other door', async () => {
+    // The point of the third binding: a brain never learns whether the world
+    // is local, embedded, or remote - the SAME DoorClient code drives it.
+    const wire = boundary(embedDoor(demo()));
+    const facade = embedFacade({ callbacks: wire.callbacks, read: wire.read });
+    const client = new DoorClient({ embedded: facade });
+    assert.equal(client.inProcess, true);
+    assert.equal(client.remote, false);
+    const snap = await client.observe();
+    assert.ok(snap.nodes.length);
+    const found = await client.find({ role: ROLES.BUTTON, name: 'start' });
+    assert.equal(found.id, 'ui:start');
+    const res = await client.act('ui:start');
+    assert.equal(res.ok, true);
+    const cat = await client.catalog();
+    assert.equal(cat.ok, true);
+    assert.ok(cat.tools.length >= 3);
 });

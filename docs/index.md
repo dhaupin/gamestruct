@@ -28,7 +28,7 @@ stream. Build those once, and both audiences are served.
 | [The contract]({{ '/contract/' | relative_url }}) | the four primitives and the node shape (SPEC sec 3-4) |
 | [The human lane]({{ '/human-lane/' | relative_url }}) | roles, accessible names, focus order, the a11y audit |
 | [The agent lane]({{ '/agent-lane/' | relative_url }}) | the MCP tool catalog, affordances, dispatch |
-| [Bindings]({{ '/bindings/' | relative_url }}) | HTTP + MCP, fail-closed auth |
+| [Bindings]({{ '/bindings/' | relative_url }}) | HTTP + MCP + embedded, fail-closed auth |
 | [Adapters]({{ '/adapters/' | relative_url }}) | the synmergia (world), vant (brain), webform, and dom reference adapters |
 | [CLI]({{ '/cli/' | relative_url }}) | `gamestruct check`, `doctor`, and `tui` |
 | [Packs]({{ '/packs/' | relative_url }}) | the extension surface: packstruct@1 packs that grade a door surface |

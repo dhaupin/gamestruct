@@ -1,4 +1,4 @@
-# gamestruct 1.4.0
+# gamestruct 1.5.0
 
 **One semantic tree. Two lanes. Four primitives — plus the eyes.** The same
 surface serves a human who uses a screen reader and a machine agent — because
@@ -93,6 +93,7 @@ re-see`. The frame stays on the host; the wire stays small.
 | `lib/profiles/agent.mjs` | the agent lane: MCP tool catalog, affordances, dispatch (+ the `see` tool) |
 | `lib/bindings/http.mjs` | the HTTP door (observe/act/wait_for/events/see, fail-closed token) |
 | `lib/bindings/mcp.mjs` | the MCP door (JSON-RPC 2.0: initialize/tools/list/tools/call/see) |
+| `lib/bindings/embedded.mjs` | the EMBEDDED door (same page/process, behind a language boundary: JSON text in, JSON published out; SPEC N27) |
 | `lib/adapters/synmergia.mjs` | reference WORLD adapter (a game state -> a tree) |
 | `lib/adapters/vant.mjs` | reference BRAIN adapter (a client that drives any door) |
 | `lib/adapters/webform.mjs` | reference NON-GAME adapter (a plain form -> a tree; the generality receipt) |
@@ -147,7 +148,7 @@ door is primitive-transport:
 
 | owner | what it owns |
 |-------|--------------|
-| **gamestruct** | the primitives, the tree, the profiles, HTTP + MCP bindings, the adapters, the hosts, the eyes (`see`) |
+| **gamestruct** | the primitives, the tree, the profiles, HTTP + MCP + embedded bindings, the adapters, the hosts, the eyes (`see`) |
 | **synmergia** | the world: the door (`/observe` `/act` `/wait_for` `/events` `/see` `/coord`), the seats, the sign-off gate |
 | **vant** | the brain: the roster, work items, delegation, leisure — driving the door as a gamestruct client |
 

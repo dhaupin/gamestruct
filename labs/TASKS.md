@@ -377,3 +377,88 @@ The family release-readiness pass (owner-driven). This repo's cut:
 - **Changelog.** `## [Unreleased]` cut to `## [1.4.0] - 2026-11-15`; entries stay verbatim.
 - **Announcement.** `docs/discussions/announcing-v1.4.0.md` + the index row.
 - **Release.** Branch -> PR -> `staging` -> PR -> `main`, then the `v1.4.0` tag drives the OIDC ladder.
+
+## 2026-11-17 - the third binding: EMBEDDED (SPEC v1.3, N27) - PR #34 -> staging
+
+**Context.** Synmergia's wasm build could not expose `window.SynmergiaAgent` at
+all: the hooks installed, but every call came back `undefined`/`null`. Root-
+caused to three marshalling laws that hold at once across a language boundary,
+each live-verified by isolating a retained callback:
+
+1. a host callback **runs**, but its **return value never crosses back** --
+   every type (int/String/Dictionary) arrived as `null`;
+2. a structured **argument** arrives as an **opaque foreign handle** -- a JS
+   object reached GDScript as a `JavaScriptObject`, never a `Dictionary`;
+3. an object literal **containing** host callbacks does not survive the
+   outbound marshal -- `window.SynmergiaAgent = {...}` landed as `undefined`.
+
+**Diagnosis that shaped the work.** These are not Synmergia quirks; they are
+what a language boundary does. gamestruct defined two bindings, both wire-based
+(HTTP, MCP), and both assume a serializer at each end. A boundary crossing has
+none, and it fails SILENTLY. So the missing thing was a third binding, not a
+patch to the game.
+
+**Shipped (PR #34).**
+- `lib/bindings/embedded.mjs` (exported `gamestruct/embedded`): `createDoor`
+  (host half: JSON strings out) + `createFacade({callbacks, read})` (client
+  half: parsed objects in, injected side channel). Every failure is an honest
+  `{ok:false, reason}`; the side channel is injected, never assumed.
+- SPEC **v1.3**, rule **N27 (the boundary carries text)** + section 7.3.
+- `DoorClient` gains an `embedded` transport, so a brain never learns which
+  transport it is on.
+- 9 tests including a **boundary simulator** that enforces all three laws;
+  revert-checked (trusting the return value -> 77 pass / 1 fail).
+- Docs + 2 self-checks.
+
+**Gates:** `npm test` 116/0; `npm run check` 22/22 + packs 5/5 + lint +
+conformance 10/10; CI `battery` + `Cloudflare Pages` green at `906cc7c`.
+
+**Lesson (the battery).** `gamestruct check` and CI's `battery` leg are NOT the
+same gate: `web/scripts/build-status.mjs` reconciles the live self-check run
+against the committed `labs/battery.json`, and a live check not listed there
+reads `UNLISTED -> RED`. I added checks without editing the contract, so CI
+went red while everything passed locally. The contract's own note says it:
+"Edit this file in the same commit that adds or removes a check." Verify with
+`node web/scripts/build-status.mjs` (the emitter itself), not `gamestruct check`.
+
+**Next (outside-in).** Wire Synmergia's `web/shared/agent-client.js` and
+`web_input_bridge.gd` onto `gamestruct/embedded` so the in-page lane stops
+hand-rolling the side channel and inherits N27 by construction; then re-pin.
+
+## 2026-11-20 - release: v1.5.0 (the embedded binding ships)
+
+**Merged first.** PR #34 (feat/embedded-binding) merged into `staging` at
+`66dbeb7`. Full gate green on the merged tip before the release branch was cut:
+`npm test` 116/0, `npm run check` 22/22 + packs + lint + conformance 10/10,
+status emitter "selfcheck 22 PASS".
+
+**What the release commit carries** (the ladder, matching `release/v1.4.0`):
+- `CHANGELOG.md` - `## [1.5.0] - 2026-11-20` inserted under `[Unreleased]`, the
+  existing `### 2026-11-17 - the third binding` sub-heading riding along.
+- `package.json` + `README.md` H1 -> 1.5.0 (version-truth pins both).
+- `docs/discussions/announcing-v1.5.0.md` + the index row.
+- This log entry.
+
+**Version call: minor, 1.5.0.** Additive only - a new module, a new export, a
+new optional client target, and a SPEC rule explicitly marked OPTIONAL. No
+existing HTTP/MCP door changes behavior. 1.5.0 was unclaimed on npm (latest was
+1.4.0), so no collision.
+
+**Packs audit (asked, verified).** `packs/public/bridge-shapes` ships COMPLETE
+in the tarball - `tar -tzf` matches `find packs -type f` byte for byte, all 6
+files including the clean + broken conformance fixtures and `test/fixtures/run.mjs`
+(the manifest's `armedCoverage`). Verified against an INSTALLED tarball, not just
+a dry-run listing: `packstruct lint --deep` passes and the fixtures run green
+("all 5 check(s) armed on clean + broken + absent - PASS"). The `files` field
+ships `packs/` wholesale, so no fixture is silently dropped by `.npmignore`.
+
+**Pre-existing, not ours.** The web build prints `WARN what/index.html:
+description 166 chars (outside 70-165)`. Confirmed by building at tag `v1.4.0` -
+it warns there too. A warning, not a failure; left alone.
+
+**Known gap (follow-up, not blocking).** `tests/version-truth.mjs` claims to pin
+"every surface that names the CURRENT version" but pins only 3 (web/package.json,
+README H1, the site.config badge derivation). The discussions post frontmatter
+`version:` and the index table version are hand-edited and unguarded - the exact
+"silently-shrunk battery" class `labs/battery.json` exists to refuse, but for
+version strings.
