@@ -40,8 +40,8 @@ a11y audit: clean
 
 ## gamestruct check
 
-Runs the bridgeworks' own self-checks: the tree, both lanes, both bindings, and
-the invariant that the SAME handle drives both lanes.
+Runs the bridgeworks' own self-checks: the tree, both lanes, all three bindings
+(HTTP, MCP, embedded), and the invariant that the SAME handle drives both lanes.
 
 ```bash
 npx gamestruct check

@@ -180,7 +180,7 @@ export default function Home() {
           <h2 className="section-title">What you get</h2>
           <p className="sub">
             Four primitives over one semantic tree (plus an optional fifth: the
-            eyes), two lanes, two bindings, one contract.
+            eyes), two lanes, three bindings, one contract.
           </p>
           <div className="grid">
             {PRIMITIVES.map((p) => (
@@ -201,7 +201,7 @@ export default function Home() {
             </div>
             <div className="card">
               <h3><span className="glyph">⇄</span> the bindings</h3>
-              <p>Transport only: <code>bindings/http</code> (<code>/observe</code>, <code>/act</code>, <code>/wait_for</code>, <code>/events</code>, <code>/see</code>, <code>/health</code>, fail-closed auth) and <code>bindings/mcp</code> (JSON-RPC 2.0).</p>
+              <p>Transport only: <code>bindings/http</code> (<code>/observe</code>, <code>/act</code>, <code>/wait_for</code>, <code>/events</code>, <code>/see</code>, <code>/health</code>, fail-closed auth), <code>bindings/mcp</code> (JSON-RPC 2.0), and <code>bindings/embedded</code> (a door in the same page or process, behind a language boundary - JSON text in, JSON published out).</p>
             </div>
           </div>
         </div>

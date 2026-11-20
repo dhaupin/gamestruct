@@ -2,7 +2,7 @@
 permalink: bindings/
 layout: default
 title: Bindings
-description: The HTTP and MCP transport bindings - how the primitives (and the optional eyes) reach a runtime, and how auth fails closed.
+description: The HTTP, MCP, and embedded transport bindings - how the primitives (and the optional eyes) reach a runtime, and how auth fails closed.
 nav_order: 5
 ---
 

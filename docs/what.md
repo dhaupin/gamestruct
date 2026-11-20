@@ -10,7 +10,7 @@ nav_order: 9
 
 gamestruct is a zero-dependency ESM library. It defines one contract - four
 primitives over one semantic tree (plus an optional fifth: the eyes) - and ships
-reference renderings for both audiences plus two transport bindings.
+reference renderings for both audiences plus three bindings.
 
 ## The four primitives
 
@@ -54,6 +54,10 @@ A binding is **transport only**; it never invents state.
   `/see`, `/health`. Fail-closed token auth.
 - **MCP** (`bindings/mcp`) - JSON-RPC 2.0: `initialize`, `tools/list`,
   `tools/call`, plus `observe`/`events`/`see` as direct methods.
+- **Embedded** (`bindings/embedded`) - a door in the SAME page or process as
+  its client, behind a language boundary (wasm, FFI, a native addon) that
+  cannot marshal structured values: JSON text in, JSON published out, facade
+  built client-side (SPEC N27).
 
 ## What ships in the box
 
@@ -67,6 +71,7 @@ A binding is **transport only**; it never invents state.
 | `lib/profiles/agent.mjs` | the agent lane (toolCatalog, affordances, toolCall) |
 | `lib/bindings/http.mjs` | the HTTP door |
 | `lib/bindings/mcp.mjs` | the MCP door |
+| `lib/bindings/embedded.mjs` | the embedded door (behind a language boundary; N27) |
 | `lib/adapters/synmergia.mjs` | the reference WORLD adapter |
 | `lib/adapters/vant.mjs` | the reference BRAIN adapter |
 | `lib/adapters/webform.mjs` | the reference NON-GAME adapter (a plain form; the generality receipt) |
