@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-20
+
 ### 2026-11-17 - the third binding: EMBEDDED (SPEC v1.3, rule N27)
 
 The contract defined two bindings, both wire-based (HTTP, MCP). Neither covers
