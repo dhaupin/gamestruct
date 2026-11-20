@@ -7,7 +7,7 @@
 // rows (CHANGELOG dated sections), range pins such as "0.9.x is the
 // manual ladder" (they bind ladder COMPATIBILITY, never the current
 // version), and other packages' version mentions.
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -55,6 +55,81 @@ if (badgeLine) {
   const expr = badgeLine[1].replace(/,\s*$/, '').trim()
   if (!/pkg\.version/.test(expr)) {
     problems.push(`site.config.js badge is ${expr} - it must DERIVE from package.json (badge: 'v' + pkg.version), never a hand-copied literal that drifts`)
+  }
+}
+
+// The release-post surface: docs/discussions/announcing-vX.Y.Z.md is the
+// announcement for that version, and the index row is what a reader clicks.
+// Both hand-name a version, so both are leg-pinned. Two classes are checked:
+//   - SELF-CONSISTENCY (every post, every row): the filename, the frontmatter
+//     `version:`, the title, the H1 and the index row must name ONE version.
+//     A post whose title says 1.4.0 while its filename says 1.5.0 is drift
+//     regardless of what package.json says.
+//   - THE CURRENT PIN (the current version only): the post for the packaged
+//     version must exist and agree, so a cut cannot ship without its post.
+const postsDir = join(treeRoot, 'docs/discussions')
+let postFiles = []
+try {
+  postFiles = readdirSync(postsDir).filter((f) => /^announcing-v\d+\.\d+\.\d+\.md$/.test(f)).sort()
+} catch { /* absent is fine */ }
+
+const indexPath = join(postsDir, 'index.md')
+let indexRows = []
+try {
+  indexRows = readFileSync(indexPath, 'utf8')
+    .split('\n')
+    .map((line) => line.match(/^\|\s*\[[^\]]*\]\(\/gamestruct\/discussions\/(announcing-v(\d+\.\d+\.\d+))\/\)\s*\|\s*(\d+\.\d+\.\d+)\s*\|/))
+    .filter(Boolean)
+    .map((m) => ({ slug: m[1], fileVer: m[2], rowVer: m[3] }))
+} catch { /* absent is fine */ }
+
+if (postFiles.length) {
+  surfaces.push('docs/discussions posts (filename/frontmatter/title/H1)')
+}
+for (const f of postFiles) {
+  const fileVer = f.match(/^announcing-v(\d+\.\d+\.\d+)\.md$/)[1]
+  const body = readFileSync(join(postsDir, f), 'utf8')
+  const fm = body.match(/^version:\s*(\d+\.\d+\.\d+)\s*$/m)
+  const title = body.match(/^title:\s*(.+)$/m)
+  const h1 = body.match(/^#\s+gamestruct v(\d+\.\d+\.\d+)\b/m)
+  const say = (what, got) =>
+    problems.push(`${f}: ${what} names ${got} but the filename says ${fileVer} - one post, one version`)
+  if (!fm) problems.push(`${f}: frontmatter has no \`version:\` line - the post must declare the version it announces`)
+  else if (fm[1] !== fileVer) say('frontmatter version', fm[1])
+  if (title) {
+    const tm = title[1].match(/gamestruct v(\d+\.\d+\.\d+)\b/)
+    if (tm && tm[1] !== fileVer) say('title', tm[1])
+  }
+  if (h1 && h1[1] !== fileVer) say('H1', h1[1])
+}
+
+if (indexRows.length) {
+  surfaces.push('docs/discussions/index.md rows')
+}
+for (const row of indexRows) {
+  if (row.fileVer !== row.rowVer) {
+    problems.push(`docs/discussions/index.md: the row linking ${row.slug} claims version ${row.rowVer} but the slug says ${row.fileVer} - the row must name the post it links`)
+  }
+  if (postFiles.length && !postFiles.includes(`${row.slug}.md`)) {
+    problems.push(`docs/discussions/index.md: the row linking ${row.slug} has no such post file - a row must not outlive its post`)
+  }
+}
+
+// The current pin: the packaged version must have its post, and the index
+// must carry the matching row. This is what makes the post/tag ordering
+// visible - a cut that promotes docs without the tag still leaves a post
+// claiming a version the registry has not served, which is exactly the
+// "fiction by promotion" the index forbids.
+const currentPost = `announcing-v${v}.md`
+if (postFiles.length || indexRows.length) {
+  if (!postFiles.includes(currentPost)) {
+    problems.push(`docs/discussions/${currentPost} is missing - the packaged version ${v} must ship its announcement post (one file per release)`)
+  }
+  const row = indexRows.find((r) => r.slug === `announcing-v${v}`)
+  if (!row) {
+    problems.push(`docs/discussions/index.md has no row for announcing-v${v} - the packaged version ${v} must be listed`)
+  } else if (row.rowVer !== v) {
+    problems.push(`docs/discussions/index.md lists announcing-v${v} as version ${row.rowVer} but package.json says ${v}`)
   }
 }
 
