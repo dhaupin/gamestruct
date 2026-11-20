@@ -30,7 +30,7 @@ The embedded binding crossed a language boundary, so it reads its answer off a s
 
 ## Tests
 
-Four new regression tests in `tests/bridgeworks.test.mjs`. Each one was verified to **fail** with its guard removed, so none is vacuous. The suite is 90 + 31 pass, and `npm run check` is clean with conformance 10/10.
+Five new regression tests in `tests/bridgeworks.test.mjs`. Each one was verified to **fail** with its guard removed, so none is vacuous. The suite is 90 + 31 pass, and `npm run check` is clean with conformance 10/10.
 
 ## What this means for a host
 
