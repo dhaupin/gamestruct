@@ -877,6 +877,91 @@ test('embedded binding: malformed published JSON refuses, never throws', () => {
     assert.match(res.reason, /malformed JSON/);
 });
 
+test('embedded binding: a callback that dies without publishing never returns the PREVIOUS result', () => {
+    // The side channel is stateful: it holds the last publish until the next
+    // one overwrites it. A host callback that dies mid-run publishes nothing,
+    // so without invalidation the facade would hand back the PREVIOUS result
+    // and report success for an action that never ran -- an agent would
+    // believe its click landed. This is the stale-read defect.
+    let published = '';
+    let actAlive = true;
+    const facade = embedFacade({
+        callbacks: {
+            observe: () => { published = JSON.stringify({ ok: true, frame: 42, in_world: true }); },
+            act: () => { if (actAlive) published = JSON.stringify({ ok: true, acted: 'yes' }); },
+        },
+        read: () => published,
+        clear: () => { published = undefined; },
+    });
+
+    const first = facade.observe();
+    assert.equal(first.ok, true);
+    assert.equal(first.frame, 42);
+
+    // The act hook dies (a host-side error mid-callback: nothing published).
+    actAlive = false;
+    const acted = facade.act('ui:Start');
+    assert.equal(acted.ok, false, 'a dead act must not report the observe snapshot as success');
+    assert.match(acted.reason, /published no act result/);
+    assert.equal(acted.frame, undefined, 'the stale observe frame must not leak through');
+});
+
+test('embedded binding: two identical observes are both fresh (invalidate, do not compare)', () => {
+    // Value comparison cannot distinguish "fresh" from "stale": a second poll
+    // that returns the same snapshot is legitimate. Clearing before the call
+    // is what makes freshness knowable.
+    let published = '';
+    let calls = 0;
+    const facade = embedFacade({
+        callbacks: {
+            observe: () => { calls++; published = JSON.stringify({ ok: true, frame: 7 }); },
+        },
+        read: () => published,
+        clear: () => { published = undefined; },
+    });
+    const a = facade.observe();
+    const b = facade.observe();
+    assert.equal(a.ok, true);
+    assert.equal(b.ok, true);
+    assert.equal(calls, 2, 'both calls must reach the host');
+});
+
+test('embedded binding: a dead see callback never returns the previous capture', async () => {
+    // see() is the one primitive that may publish ASYNCHRONOUSLY (a capture
+    // renders a frame), but it reads the same stateful side channel -- so it
+    // must invalidate too, or a dead capture hands back the last image.
+    let published = '';
+    let seeAlive = true;
+    const facade = embedFacade({
+        callbacks: {
+            observe: () => { published = JSON.stringify({ ok: true, frame: 1 }); },
+            see: () => { if (seeAlive) published = JSON.stringify({ ok: true, png: 'a.png' }); },
+        },
+        read: () => published,
+        clear: () => { published = undefined; },
+    });
+    assert.equal(facade.observe().frame, 1);
+    const shot = await facade.see();
+    assert.equal(shot.ok, true);
+    assert.equal(shot.png, 'a.png');
+
+    seeAlive = false;
+    const dead = await facade.see();
+    assert.equal(dead.ok, false, 'a dead capture must not return the previous image');
+    assert.equal(dead.png, undefined);
+});
+
+test('embedded binding: a throwing invalidator does not fail the call', () => {
+    const facade = embedFacade({
+        callbacks: { observe: () => {} },
+        read: () => '',
+        clear: () => { throw new Error('nope'); },
+    });
+    const res = facade.observe();
+    assert.equal(res.ok, false);
+    assert.match(res.reason, /published no observe result/);
+});
+
 test('embedded binding: no side channel is an honest refusal', () => {
     const facade = embedFacade({ callbacks: { observe: () => {} } });
     const res = facade.observe();
@@ -900,6 +985,25 @@ test('embedded binding: waitFor polls observe and times out honestly (N3)', asyn
     const miss = await facade.waitFor({ focus: 'nope' }, 60);
     assert.equal(miss.ok, false);
     assert.equal(miss.reason, 'timeout');
+});
+
+test('embedded binding: a REFUSAL snapshot never satisfies a predicate (N3)', async () => {
+    // A dead door answers {ok:false, reason} -- a snapshot with NO fields. A
+    // shallow match against {in_world:false} used to succeed on
+    // `undefined === false`, so waitFor resolved ok:true while the game was
+    // not running: a false success on the one verb an agent uses to WAIT.
+    const facade = embedFacade({
+        callbacks: { observe: () => { published = JSON.stringify({ ok: false, reason: 'driver missing' }); } },
+        read: () => published,
+    });
+    let published = '';
+    // An EMPTY predicate matches everything (the loop body never runs), so a
+    // refusal snapshot satisfied it and waitFor resolved ok:true at once.
+    const refused = await facade.waitFor({}, 80);
+    assert.equal(refused.ok, false, 'a refusal must never resolve as success');
+    assert.equal(refused.reason, 'timeout');
+    const refusedField = await facade.waitFor({ in_world: false }, 80);
+    assert.equal(refusedField.ok, false);
 });
 
 test('embedded binding: the eyes are optional and honest (N22)', async () => {
