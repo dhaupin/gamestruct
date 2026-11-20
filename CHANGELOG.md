@@ -6,6 +6,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-11-21
+
+### 2026-11-21 - a failure must never read as success (embedded, SPEC N3/N27)
+
+Three defects in the embedded binding, all one class: a dead or degraded door
+answered `ok:true`. Every one was reproduced before fixing, and every fix has a
+regression test proven to fail without it.
+
+- **The side channel is STATEFUL** (SPEC N27). `window.__synAgentResult` holds
+  the last publish until the next one overwrites it, so a host callback that died
+  without publishing (a throw, a collected `create_callback`, a capture that
+  never rendered) left the PREVIOUS result sitting there and a naive read handed
+  it back as fresh. `createFacade` now takes `opts.clear` and calls it BEFORE
+  every invoke. Value comparison is wrong here: two identical `observe` polls are
+  legitimate, so "same as last time" cannot tell fresh from stale.
+- **`see()` was the one verb that skipped invalidation.** It is also the only
+  primitive that may publish ASYNCHRONOUSLY (a capture renders a frame), so a
+  dead capture returned the previous image. Fixed.
+- **A REFUSAL is not a state** (SPEC N3). `matchesSnapshot` treated any snapshot
+  as a state, so a `{ok:false, reason}` answer - a snapshot with NO fields -
+  satisfied the EMPTY predicate `{}` (the key loop never runs) and `wait_for`
+  resolved `ok:true` at once while the surface was not even running. It now
+  short-circuits on `!snap || snap.ok === false`, and the `summary` sub-object is
+  guarded the same way so a field-less snapshot cannot throw.
+
+SPEC gains the N3 clause and the N27 stateful-channel clause.
+
 ## [1.5.0] - 2026-11-20
 
 ### 2026-11-17 - the third binding: EMBEDDED (SPEC v1.3, rule N27)
