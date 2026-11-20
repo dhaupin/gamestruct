@@ -462,3 +462,40 @@ README H1, the site.config badge derivation). The discussions post frontmatter
 `version:` and the index table version are hand-edited and unguarded - the exact
 "silently-shrunk battery" class `labs/battery.json` exists to refuse, but for
 version strings.
+
+## 2026-11-20 - v1.5.0 tagged and published (and the ladder lesson)
+
+**Tagged and shipped.** `v1.5.0` (annotated, `gamestruct 1.5.0`, matching the
+v1.3.0/v1.4.0 message form) on `02b6225`. `publish` job green: npm `latest` is
+`1.5.0`. GH release published with the registry tarball attached
+(`gamestruct-1.5.0.tgz`, 53,819 bytes). The registry tarball, the release asset
+and a local `npm pack` are byte-identical (`sha256 7d4677e3...`). `staging`
+fast-forwarded to `main` by the sync job.
+
+**The ladder failed, not the release.** `publish` succeeded, then `release` and
+`verify` failed. The attach step polls `npm pack gamestruct@V` for 60x5s (5 min);
+the registry read replica took ~6 min, so the step gave up. Because the release
+object is cut BEFORE the tarball attach, the failure left a PUBLISHED release
+with ZERO assets, and verify then correctly refused.
+
+Recovered by hand: attached the registry tarball to the release, re-ran the
+failed jobs -> all three green. Verified independently rather than trusting the
+workflow's own report.
+
+**Fixed properly (PR #37, merged).** Bound 60 -> 90 attempts with a 5s -> 30s
+backoff (43 min worst case, far inside the job limit). Validated with `bash -n`
+and by driving the loop with a fake `npm` that fails twice (recovers on attempt
+3, backoff visible). Lesson for the next cut: a *published* release can carry
+zero assets, so "npm has it" is not the whole check - assert the asset too.
+
+**Process note (this round's real drift).** `docs-deploy.yml` deploys on push to
+`main`, NOT on the tag, so merging the promote PR published the announcement
+post while npm still served the previous version - the exact "fiction by
+promotion" the discussions index forbids. The window closed when the tag was
+pushed. If a future cut wants zero window, gate the docs deploy on the tag or
+land the post in a follow-up commit after publish. Not changed here: the current
+order (promote, then tag within minutes) is the established flow.
+
+**Still open (follow-up).** `tests/version-truth.mjs` pins only 3 surfaces while
+claiming "every surface that names the CURRENT version". The post frontmatter
+`version:` and the discussions index row are hand-edited and unguarded.
