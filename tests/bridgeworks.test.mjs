@@ -926,6 +926,31 @@ test('embedded binding: two identical observes are both fresh (invalidate, do no
     assert.equal(calls, 2, 'both calls must reach the host');
 });
 
+test('embedded binding: a dead see callback never returns the previous capture', async () => {
+    // see() is the one primitive that may publish ASYNCHRONOUSLY (a capture
+    // renders a frame), but it reads the same stateful side channel -- so it
+    // must invalidate too, or a dead capture hands back the last image.
+    let published = '';
+    let seeAlive = true;
+    const facade = embedFacade({
+        callbacks: {
+            observe: () => { published = JSON.stringify({ ok: true, frame: 1 }); },
+            see: () => { if (seeAlive) published = JSON.stringify({ ok: true, png: 'a.png' }); },
+        },
+        read: () => published,
+        clear: () => { published = undefined; },
+    });
+    assert.equal(facade.observe().frame, 1);
+    const shot = await facade.see();
+    assert.equal(shot.ok, true);
+    assert.equal(shot.png, 'a.png');
+
+    seeAlive = false;
+    const dead = await facade.see();
+    assert.equal(dead.ok, false, 'a dead capture must not return the previous image');
+    assert.equal(dead.png, undefined);
+});
+
 test('embedded binding: a throwing invalidator does not fail the call', () => {
     const facade = embedFacade({
         callbacks: { observe: () => {} },
