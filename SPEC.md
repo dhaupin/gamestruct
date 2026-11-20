@@ -265,12 +265,21 @@ the facade reads the side channel back in the SAME turn — no await, no race.
   callback, an empty publish, or unparseable text MUST be an honest
   `{ ok:false, reason }` refusal (N2/N21), never a throw into the client's
   loop.
+  A stateful side channel MUST be invalidated before each invoke, not
+  compared after it: it holds the last publish until the next overwrites it,
+  so a callback that dies without publishing would otherwise hand back the
+  PREVIOUS result as a success that never happened. A value comparison cannot
+  tell fresh from stale (two identical `observe` polls are legitimate); the
+  host injects the invalidator as `clear`, and the facade calls it before
+  every callback.
 
 `lib/bindings/embedded.mjs` is the reference: `createDoor(bridge)` is the host
 half (three primitives returning JSON strings, plus `see` when the surface has
-eyes); `createFacade({ callbacks, read })` is the client half (the four
-primitives returning parsed objects, `wait_for` by polling `observe`, and an
-honest blind `see`). The side channel is INJECTED, never assumed — naming a
+eyes); `createFacade({ callbacks, read, clear })` is the client half (the
+four primitives returning parsed objects, `wait_for` by polling `observe`,
+and an honest blind `see`). `clear` is optional so a same-process host that
+injects only `read` is unaffected, but a host behind a real boundary should
+always supply it. The side channel is INJECTED, never assumed — naming a
 host's global in the contract would bake one implementation into it. The
 reference client (`DoorClient`) accepts an `embedded` facade and drives it
 exactly like a `bridge` or a `url`, so a brain never learns which transport it

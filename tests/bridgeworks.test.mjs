@@ -877,6 +877,66 @@ test('embedded binding: malformed published JSON refuses, never throws', () => {
     assert.match(res.reason, /malformed JSON/);
 });
 
+test('embedded binding: a callback that dies without publishing never returns the PREVIOUS result', () => {
+    // The side channel is stateful: it holds the last publish until the next
+    // one overwrites it. A host callback that dies mid-run publishes nothing,
+    // so without invalidation the facade would hand back the PREVIOUS result
+    // and report success for an action that never ran -- an agent would
+    // believe its click landed. This is the stale-read defect.
+    let published = '';
+    let actAlive = true;
+    const facade = embedFacade({
+        callbacks: {
+            observe: () => { published = JSON.stringify({ ok: true, frame: 42, in_world: true }); },
+            act: () => { if (actAlive) published = JSON.stringify({ ok: true, acted: 'yes' }); },
+        },
+        read: () => published,
+        clear: () => { published = undefined; },
+    });
+
+    const first = facade.observe();
+    assert.equal(first.ok, true);
+    assert.equal(first.frame, 42);
+
+    // The act hook dies (a host-side error mid-callback: nothing published).
+    actAlive = false;
+    const acted = facade.act('ui:Start');
+    assert.equal(acted.ok, false, 'a dead act must not report the observe snapshot as success');
+    assert.match(acted.reason, /published no act result/);
+    assert.equal(acted.frame, undefined, 'the stale observe frame must not leak through');
+});
+
+test('embedded binding: two identical observes are both fresh (invalidate, do not compare)', () => {
+    // Value comparison cannot distinguish "fresh" from "stale": a second poll
+    // that returns the same snapshot is legitimate. Clearing before the call
+    // is what makes freshness knowable.
+    let published = '';
+    let calls = 0;
+    const facade = embedFacade({
+        callbacks: {
+            observe: () => { calls++; published = JSON.stringify({ ok: true, frame: 7 }); },
+        },
+        read: () => published,
+        clear: () => { published = undefined; },
+    });
+    const a = facade.observe();
+    const b = facade.observe();
+    assert.equal(a.ok, true);
+    assert.equal(b.ok, true);
+    assert.equal(calls, 2, 'both calls must reach the host');
+});
+
+test('embedded binding: a throwing invalidator does not fail the call', () => {
+    const facade = embedFacade({
+        callbacks: { observe: () => {} },
+        read: () => '',
+        clear: () => { throw new Error('nope'); },
+    });
+    const res = facade.observe();
+    assert.equal(res.ok, false);
+    assert.match(res.reason, /published no observe result/);
+});
+
 test('embedded binding: no side channel is an honest refusal', () => {
     const facade = embedFacade({ callbacks: { observe: () => {} } });
     const res = facade.observe();
