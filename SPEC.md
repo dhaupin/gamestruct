@@ -18,6 +18,11 @@ registers a capture function stays v1-conformant and simply refuses `see`.
 **v1.2** adds the client transport posture as rules N25-N26: the reference
 client's remote calls ride an injectable transport, and a refusal body crosses
 the wire as data (N21 applies end to end). Purely additive to a door.
+**v1.3** adds the third binding, EMBEDDED, as rule N27: a door in the same
+page or process as its client, behind a language boundary (wasm, FFI, a native
+addon) that cannot marshal structured values. The boundary carries JSON text
+in and published JSON out, and the client facade is built on the client side.
+Purely additive: a door that serves HTTP or MCP is unaffected.
 
 ---
 
@@ -230,6 +235,47 @@ direct methods. Protocol version `2024-11-05`.
   `see` tool; a blind surface MUST NOT.
 - **N18** — an unknown method MUST return JSON-RPC error `-32601`.
 
+### 7.3 Embedded (the same page, behind a boundary)
+
+The third binding. A door and its client in the SAME page or process, but
+separated by a language boundary that **cannot marshal structured values** —
+Godot's `JavaScriptBridge`, Emscripten, a native addon, a Python C-extension.
+The wire bindings above assume a serializer at both ends; a boundary crossing
+has none, and its failures are silent rather than loud. Live-verified on a
+wasm host, all three at once:
+
+- a host callback **runs**, but its **return value does not cross back** —
+  every type (number, string, dictionary) arrived as `null`;
+- a structured **argument** arrives as an **opaque foreign handle** (a JS
+  object reached GDScript as a `JavaScriptObject`, never a `Dictionary`), so
+  only primitives survive the inbound marshal;
+- an object literal that **contains** host callbacks does not survive the
+  outbound marshal at all — it landed as `undefined`.
+
+So the binding's shape is: JSON **text** in, JSON **published** out, and the
+client facade **built on the client side**. A callback runs synchronously, so
+the facade reads the side channel back in the SAME turn — no await, no race.
+
+- **N27 (the boundary carries text)** — an embedded door MUST exchange every
+  payload as JSON **text** and MUST NOT rely on the host marshalling objects
+  or on a callback's return value. A host callback MUST publish its result on
+  a side channel (a global, a shared buffer, a native getter) that the client
+  reads back; the client facade MUST be constructed on the client side, never
+  handed across as a host-side object. A missing callback, a throwing
+  callback, an empty publish, or unparseable text MUST be an honest
+  `{ ok:false, reason }` refusal (N2/N21), never a throw into the client's
+  loop.
+
+`lib/bindings/embedded.mjs` is the reference: `createDoor(bridge)` is the host
+half (three primitives returning JSON strings, plus `see` when the surface has
+eyes); `createFacade({ callbacks, read })` is the client half (the four
+primitives returning parsed objects, `wait_for` by polling `observe`, and an
+honest blind `see`). The side channel is INJECTED, never assumed — naming a
+host's global in the contract would bake one implementation into it. The
+reference client (`DoorClient`) accepts an `embedded` facade and drives it
+exactly like a `bridge` or a `url`, so a brain never learns which transport it
+is on.
+
 ## 8. Posture (NORMATIVE)
 
 - **N19 (identity)** — a *seat* is one authenticated actor. A door MUST NOT
@@ -266,7 +312,10 @@ A door is **gamestruct-conformant** when it passes, at minimum:
   N13–N15 (agent lane), N16–N18 (bindings), N19–N21 (posture). The eyes
   (N22–N24) are OPTIONAL: a blind door is conformant without them; a door that
   claims eyes MUST satisfy all three. The client transport rules (N25–N26)
-  bind the reference CLIENT, not a door; they are OPTIONAL for a door.
+  bind the reference CLIENT, not a door; they are OPTIONAL for a door. The
+  embedded binding (N27) is OPTIONAL and additive: a door that serves HTTP or
+  MCP is conformant without it; a door that claims an embedded binding MUST
+  carry text across the boundary and publish, never return.
 
 `gamestruct check` runs the reference battery; `gamestruct doctor` prints both
 lanes' output for a demo surface and runs the a11y audit.

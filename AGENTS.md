@@ -27,6 +27,8 @@ lib/profiles/human.mjs    the human lane (render, a11yDump, audit)
 lib/profiles/agent.mjs    the agent lane (toolCatalog, affordances, toolCall, the see tool)
 lib/bindings/http.mjs     the HTTP door (incl. /see)
 lib/bindings/mcp.mjs      the MCP door (JSON-RPC 2.0; async, incl. see)
+lib/bindings/embedded.mjs the EMBEDDED door (same page/process, behind a language
+                          boundary; JSON text in, JSON published out; N27)
 lib/adapters/synmergia.mjs  reference WORLD adapter
 lib/adapters/vant.mjs       reference BRAIN adapter
 lib/adapters/webform.mjs    reference NON-GAME adapter (a plain form; the generality receipt)
@@ -46,7 +48,7 @@ labs/battery.json         the committed self-check contract (gamestruct-battery@
 labs/playtest.mjs         the live play-test harness (a reference brain; drives a running door through all five primitives incl. see)
 labs/TASKS.md             session log (operational history)
 web/scripts/build-status.mjs  the family-status@1 emitter (writes web/public/status.json)
-SPEC.md                   the normative contract (spec revision v1.2, rules N1..N26; N22-N24 = the eyes, N25-N26 = the client transport)
+SPEC.md                   the normative contract (spec revision v1.3, rules N1..N27; N22-N24 = the eyes, N25-N26 = the client transport, N27 = the embedded boundary)
 DEPLOY.md                 the release runbook (the OIDC release ladder; the 0.9.0 bootstrap + phone lane as history)
 site.config.js            the site identity (see below)
 ```
