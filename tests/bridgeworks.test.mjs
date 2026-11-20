@@ -1,8 +1,8 @@
 /**
  * gamestruct — the bridgeworks test suite.
  *
- * Covers the tree/roles vocabulary, both lanes, both bindings, and the two
- * reference adapters. Run: `npm test`.
+ * Covers the tree/roles vocabulary, both lanes, all three bindings (HTTP, MCP,
+ * embedded), and the reference adapters. Run: `npm test`.
  */
 
 import { test } from 'node:test';
