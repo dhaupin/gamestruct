@@ -6,6 +6,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### 2026-11-03 - the npm parity gate lands on current trunk
+
+The npm link surfaces already shipped here (docs header, docs nav, landing nav all
+carried `https://www.npmjs.com/package/gamestruct`), but nothing held them: a rebrand
+sweep or a footer rewrite could drop one and no gate would notice. This adds the test,
+not the links.
+
+- **`tests/npm-parity.test.mjs`**, wired into `npm test`. It names the three required
+  surfaces explicitly (`docs/_layouts/default.html`, `docs/_data/nav.yml`,
+  `site.config.js`) rather than accepting "any surface has a link" - a docs tree has
+  several surfaces, and a gate satisfied by whichever one happens to carry the link
+  cannot notice the one that lost it. Two lawful shapes: the literal, or the generated
+  `{{ site.npm_url }}`.
+- **Proven to bite, twice, and the first version did not.** The initial test used the
+  family's usual "at least one hit" shape; retargeting a nav link to another URL still
+  passed 5/5, so it proved nothing. Rewritten around a `parityProblem()` predicate with
+  an explicit required list, and re-verified on real bytes: retargeting
+  `docs/_data/nav.yml` now reds 2 tests, restoring it returns 6/6. A mutation fixture in
+  the suite also asserts the predicate refuses a stripped surface and a wrong package
+  name.
+- **No version bump.** Repo surfaces, not the shipped package.
+
 ## [1.5.1] - 2026-11-21
 
 ### 2026-11-21 - a failure must never read as success (embedded, SPEC N3/N27)

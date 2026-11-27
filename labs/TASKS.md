@@ -3,6 +3,34 @@
 Operational history. Stable conventions live in `AGENTS.md`; the normative
 contract lives in `SPEC.md`.
 
+## 2026-11-03 - clone refreshed to v1.5.1, and the parity gate lands
+
+The workspace clone had drifted: `feat/npm-parity-links` was based on `6e22129`, 2231
+lines and several releases behind `origin/main` (`73a7844`, v1.5.1). That is why
+`check-npm-tracking --live` reported the ledger's tree 1.3.0 against the registry's
+1.5.1 - a stale checkout, not a ledger bug.
+
+**Refreshed.** Fetched, then rebuilt the branch on `origin/main` rather than rebasing
+the stale one: the old commit carried only four files, and three of them (CHANGELOG,
+TASKS, package.json wiring) had moved on upstream. Porting forward beat merging a
+2231-line reversal.
+
+**What was actually missing.** Nothing on the surfaces - `origin/main` already links
+npm in the docs header, the docs nav, and `site.config.js`. What was missing was the
+test. Ported `tests/npm-parity.test.mjs` and wired it into `npm test`.
+
+**The first port did not bite, which is the point of checking.** It used the family's
+"at least one surface has a link" shape. Retargeting `docs/_data/nav.yml` to a
+non-npm URL still passed 5/5, because other surfaces satisfied the check - a gate that
+cannot see the surface that broke. Rewritten around a `parityProblem()` predicate over
+an explicit `REQUIRED` list, then re-verified on real bytes: retargeting the nav now
+reds 2 tests, restore returns 6/6. Mutation fixtures in the suite cover a stripped
+surface and a wrong package name.
+
+**Receipts.** `npm test` 90/90 + 37/37 pass; `npm run check` exit 0 (after
+`npm install` - the fresh checkout had no `packstruct`, so `lint:packs` exited 127
+until the dependency was installed). No version bump: repo surfaces, not the package.
+
 ## 2026-11-11 - the thesis band lands on the content grid (mobile)
 
 Owner report (via the family sweep): the thesis band - the accent-ruled pull-quote below the hero - read as a full-bleed bar on mobile. Bold text, block edge-to-edge, no margin, "might be missing a css parent container." Owner is mobile-first.
